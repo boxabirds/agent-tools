@@ -5,10 +5,10 @@ from typing import Optional
 
 from mcp.server.fastmcp import FastMCP
 
-from agent_tools import parse_code as parse_code_func
-from agent_tools import parse_file as parse_file_func
-from agent_tools import supported_languages
-from agent_tools.logging import setup_logging, get_logger
+from agenttools import parse_code as parse_code_func
+from agenttools import parse_file as parse_file_func
+from agenttools import supported_languages
+from agenttools.logging import setup_logging, get_logger
 
 # Set up logging
 log_level = os.getenv("AGENT_TOOLS_LOG_LEVEL", "INFO")
@@ -112,8 +112,8 @@ async def check_language(language: str) -> dict:
     """
     mcp_logger.debug(f"check_language called with language={language}")
     
-    from agent_tools.api import AgentTools
-    from agent_tools.parsers.tree_sitter_parser import TreeSitterParser
+    from agenttools.api import AgentTools
+    from agenttools.parsers.tree_sitter import TreeSitterParser
     
     tools = AgentTools()
     languages = supported_languages()

@@ -8,8 +8,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from click.testing import CliRunner
 
-from agent_tools.cli import cli
-from agent_tools.parsers.base import ParseResult
+from agenttools.cli import cli
+from agenttools.parsers.base import ParseResult
 
 
 @pytest.fixture

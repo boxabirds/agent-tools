@@ -3,15 +3,16 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-tools"
-version = "0.1.0"
-description = "AI agent tools with tree-sitter code parsing capabilities"
+name = "mcpagenttools"
+dynamic = ["version"]
+description = "AI agent tools with tree-sitter based code parsing"
 readme = "README.md"
 authors = [
-    {name = "Julian", email = "julian@example.com"}
+    {name = "Julian Harris", email = "julian.harris@gmail.com"}
 ]
 license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
+keywords = ["ai", "agents", "code-parsing", "tree-sitter", "ast", "mcp"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -20,6 +21,9 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Text Processing :: Linguistic",
 ]
 dependencies = [
     "tree-sitter>=0.21.0",
@@ -48,12 +52,18 @@ cpp = [
 ]
 
 [project.scripts]
-agent-tools = "agent_tools.cli:main"
-agent-tools-mcp = "agent_tools.mcp.server:main"
+agenttools = "agenttools.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["agent_tools*"]
+[project.urls]
+"Homepage" = "https://github.com/yourusername/mcpagenttools"
+"Documentation" = "https://github.com/yourusername/mcpagenttools/blob/main/docs/user-guide.md"
+"Issues" = "https://github.com/yourusername/mcpagenttools/issues"
+
+[tool.setuptools]
+packages = ["agenttools", "agenttools.parsers", "agenttools.mcp", "agenttools.rest"]
+
+[tool.setuptools.dynamic]
+version = {attr = "agenttools.__version__.__version__"}
 
 [tool.black]
 line-length = 100

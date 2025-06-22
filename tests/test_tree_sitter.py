@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from agent_tools.parsers.base import GrammarNotFoundError, LanguageNotSupportedError
-from agent_tools.parsers.tree_sitter_parser import TreeSitterParser
+from agenttools.parsers.base import GrammarNotFoundError, LanguageNotSupportedError
+from agenttools.parsers.tree_sitter import TreeSitterParser
 
 
 @pytest.fixture

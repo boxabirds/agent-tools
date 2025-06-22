@@ -9,10 +9,10 @@ from typing import Dict, List, Optional
 
 import tree_sitter
 
-from agent_tools.parsers.base import BaseParser, ParseResult
-from agent_tools.parsers.languages import get_language_config, get_supported_languages
-from agent_tools.utils import safe_read_file, detect_language_from_file
-from agent_tools.logging import get_logger
+from agenttools.parsers.base import BaseParser, ParseResult
+from agenttools.parsers.languages import get_language_config, get_supported_languages
+from agenttools.utils import safe_read_file, detect_language_from_file
+from agenttools.logging import get_logger
 
 # Set up logger for this module
 logger = get_logger("parsers.tree_sitter")

@@ -2,8 +2,8 @@
 
 from typing import Dict, List, Optional, Type
 
-from agent_tools.parsers.base import BaseParser, ParseResult
-from agent_tools.parsers.tree_sitter_parser import TreeSitterParser
+from agenttools.parsers.base import BaseParser, ParseResult
+from agenttools.parsers.tree_sitter import TreeSitterParser
 
 
 class AgentTools:

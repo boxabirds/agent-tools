@@ -10,7 +10,7 @@ import uuid
 import httpx
 import pytest
 
-from agent_tools.mcp.rest_server import run_server, HTTPServer, RESTHandler
+from agenttools.rest.server import run_server, HTTPServer, RESTHandler
 
 
 def _run_rest_server(server: HTTPServer):

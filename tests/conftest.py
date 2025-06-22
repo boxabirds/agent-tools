@@ -7,7 +7,7 @@ from typing import Generator
 
 import pytest
 
-from agent_tools import AgentTools
+from agenttools import AgentTools
 
 
 @pytest.fixture

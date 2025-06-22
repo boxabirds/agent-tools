@@ -1,15 +1,14 @@
 """Agent Tools - AI agent utilities with tree-sitter parsing."""
 
-from agent_tools.api import (
+from agenttools.api import (
     AgentTools,
     is_language_available,
     parse_code,
     parse_file,
     supported_languages,
 )
-from agent_tools.parsers.base import ParseResult
-
-__version__ = "0.1.0"
+from agenttools.parsers.base import ParseResult
+from agenttools.__version__ import __version__
 
 __all__ = [
     "AgentTools",

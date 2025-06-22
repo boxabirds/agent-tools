@@ -11,9 +11,9 @@ from urllib.parse import urlparse, parse_qs
 from collections import OrderedDict
 import re
 
-from agent_tools.api import AgentTools
-from agent_tools.parsers.languages import LANGUAGE_CONFIGS
-from agent_tools.parsers.tree_sitter_parser import TreeSitterParser
+from agenttools.api import AgentTools
+from agenttools.parsers.languages import LANGUAGE_CONFIGS
+from agenttools.parsers.tree_sitter import TreeSitterParser
 
 # Pre-import language modules to ensure they're available
 try:

@@ -2,17 +2,17 @@
 
 import pytest
 
-from agent_tools.parsers.base import (
+from agenttools.parsers.base import (
     LanguageNotSupportedError,
     ParseResult,
     ParserError,
 )
-from agent_tools.parsers.languages import (
+from agenttools.parsers.languages import (
     get_language_by_extension,
     get_language_config,
     get_supported_languages,
 )
-from agent_tools.utils import detect_language_from_file, hash_content
+from agenttools.utils import detect_language_from_file, hash_content
 
 
 def test_parse_result():

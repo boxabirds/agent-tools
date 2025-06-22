@@ -2,8 +2,8 @@
 
 import pytest
 
-from agent_tools.api import AgentTools
-from agent_tools.parsers.base import BaseParser, ParseResult
+from agenttools.api import AgentTools
+from agenttools.parsers.base import BaseParser, ParseResult
 
 
 class MockParser(BaseParser):
