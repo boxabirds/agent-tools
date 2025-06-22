@@ -33,7 +33,7 @@ def test_cli_help(runner):
     """Test CLI help command."""
     result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
-    assert "Agent Tools CLI" in result.output
+    assert "MCP Code Parser CLI" in result.output
     assert "parse" in result.output
     assert "languages" in result.output
     assert "serve" in result.output
@@ -41,7 +41,7 @@ def test_cli_help(runner):
 
 def test_languages_command(runner):
     """Test languages command."""
-    with patch("agent_tools.cli.supported_languages") as mock_languages:
+    with patch("mcp_code_parser.cli.supported_languages") as mock_languages:
         mock_languages.return_value = ["python", "javascript", "go"]
         
         result = runner.invoke(cli, ["languages"])
@@ -64,7 +64,7 @@ def test_parse_command_text_output(runner, mock_parse_result):
         async def mock_coro(*args, **kwargs):
             return mock_parse_result
             
-        with patch("agent_tools.cli.parse_file", new=mock_coro):
+        with patch("mcp_code_parser.cli.parse_file", new=mock_coro):
             
             result = runner.invoke(cli, ["parse", temp_file])
             
@@ -89,7 +89,7 @@ def test_parse_command_json_output(runner, mock_parse_result):
         async def mock_coro(*args, **kwargs):
             return mock_parse_result
             
-        with patch("agent_tools.cli.parse_file", new=mock_coro):
+        with patch("mcp_code_parser.cli.parse_file", new=mock_coro):
             result = runner.invoke(cli, ["parse", temp_file, "--format", "json"])
             
             assert result.exit_code == 0
@@ -115,7 +115,7 @@ def test_parse_command_with_language_override(runner, mock_parse_result):
         async def mock_coro(*args, **kwargs):
             return mock_parse_result
             
-        with patch("agent_tools.cli.parse_file", new=mock_coro):
+        with patch("mcp_code_parser.cli.parse_file", new=mock_coro):
             
             result = runner.invoke(cli, ["parse", temp_file, "--language", "python"])
             
@@ -137,7 +137,7 @@ def test_parse_command_output_to_file(runner, mock_parse_result):
         async def mock_coro(*args, **kwargs):
             return mock_parse_result
             
-        with patch("agent_tools.cli.parse_file", new=mock_coro):
+        with patch("mcp_code_parser.cli.parse_file", new=mock_coro):
             
             result = runner.invoke(cli, [
                 "parse", str(input_file),
@@ -168,7 +168,7 @@ def test_parse_command_error_handling(runner):
         temp_file = f.name
     
     try:
-        with patch("agent_tools.cli.parse_file") as mock_parse:
+        with patch("mcp_code_parser.cli.parse_file") as mock_parse:
             mock_parse.return_value = error_result
             
             result = runner.invoke(cli, ["parse", temp_file])
@@ -189,7 +189,7 @@ def test_parse_command_file_not_found(runner):
 
 def test_serve_command(runner):
     """Test serve command starts server."""
-    with patch("agent_tools.mcp.server.run_stdio") as mock_serve:
+    with patch("mcp_code_parser.mcp_server.run_stdio") as mock_serve:
         result = runner.invoke(cli, ["serve"])
         
         assert result.exit_code == 0
@@ -210,7 +210,7 @@ def test_parse_command_json_with_error(runner):
         temp_file = f.name
     
     try:
-        with patch("agent_tools.cli.parse_file") as mock_parse:
+        with patch("mcp_code_parser.cli.parse_file") as mock_parse:
             mock_parse.return_value = error_result
             
             result = runner.invoke(cli, ["parse", temp_file, "--format", "json"])

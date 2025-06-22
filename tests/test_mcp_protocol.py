@@ -51,7 +51,7 @@ def mcp_client():
     """Create an MCP client connected to the server."""
     # Start the MCP server using uv run to ensure virtual env is active
     server_process = subprocess.Popen(
-        ["uv", "run", "agent-tools", "serve"],
+        ["uv", "run", "mcp-code-parser", "serve"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

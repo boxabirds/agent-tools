@@ -1,7 +1,7 @@
 # MCP Code Parser Development Plan
 
 ## Project Overview
-AI agent tools package providing both Python package interface and MCP endpoint for various utilities, starting with tree-sitter code parsing.
+MCP server for tree-sitter based code parsing, providing structured AST output for AI agents.
 
 ## Completed Tasks
 - [x] Create project directory structure

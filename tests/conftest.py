@@ -7,14 +7,6 @@ from typing import Generator
 
 import pytest
 
-from mcp_code_parser import AgentTools
-
-
-@pytest.fixture
-def tools():
-    """Create AgentTools instance."""
-    return AgentTools()
-
 
 @pytest.fixture
 def temp_dir() -> Generator[Path, None, None]:

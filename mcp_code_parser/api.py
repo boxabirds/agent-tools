@@ -1,4 +1,4 @@
-"""High-level API for agent-tools."""
+"""High-level API for mcp-code-parser."""
 
 from typing import Dict, List, Optional, Type
 
@@ -7,7 +7,7 @@ from mcp_code_parser.parsers.tree_sitter import TreeSitterParser
 
 
 class AgentTools:
-    """Main API class for agent-tools."""
+    """Main API class for mcp-code-parser."""
     
     def __init__(self):
         self._parsers: Dict[str, BaseParser] = {}

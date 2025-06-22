@@ -38,7 +38,7 @@ class MockParser(BaseParser):
 
 
 @pytest.fixture
-def agent_tools():
+def mcp_code_parser():
     """Create AgentTools instance without default parsers."""
     tools = AgentTools()
     # Clear default parsers for testing
@@ -47,137 +47,137 @@ def agent_tools():
     return tools
 
 
-def test_register_parser(agent_tools):
+def test_register_parser(mcp_code_parser):
     """Test registering custom parsers."""
     parser1 = MockParser("parser1")
     parser2 = MockParser("parser2")
     
-    agent_tools.register_parser("custom1", parser1)
-    agent_tools.register_parser("custom2", parser2)
+    mcp_code_parser.register_parser("custom1", parser1)
+    mcp_code_parser.register_parser("custom2", parser2)
     
-    assert "custom1" in agent_tools._parsers
-    assert "custom2" in agent_tools._parsers
-    assert agent_tools._parsers["custom1"] is parser1
-    assert agent_tools._parsers["custom2"] is parser2
+    assert "custom1" in mcp_code_parser._parsers
+    assert "custom2" in mcp_code_parser._parsers
+    assert mcp_code_parser._parsers["custom1"] is parser1
+    assert mcp_code_parser._parsers["custom2"] is parser2
 
 
-def test_set_default_parser(agent_tools):
+def test_set_default_parser(mcp_code_parser):
     """Test setting default parser."""
     parser = MockParser()
-    agent_tools.register_parser("test", parser)
+    mcp_code_parser.register_parser("test", parser)
     
     # Should fail if parser not registered
     with pytest.raises(ValueError, match="Parser 'nonexistent' not registered"):
-        agent_tools.set_default_parser("nonexistent")
+        mcp_code_parser.set_default_parser("nonexistent")
     
     # Should succeed if parser is registered
-    agent_tools.set_default_parser("test")
-    assert agent_tools._default_parser is parser
+    mcp_code_parser.set_default_parser("test")
+    assert mcp_code_parser._default_parser is parser
 
 
-def test_get_parser(agent_tools):
+def test_get_parser(mcp_code_parser):
     """Test getting parsers."""
     parser1 = MockParser("parser1")
     parser2 = MockParser("parser2")
     
-    agent_tools.register_parser("p1", parser1)
-    agent_tools.register_parser("p2", parser2)
-    agent_tools.set_default_parser("p1")
+    mcp_code_parser.register_parser("p1", parser1)
+    mcp_code_parser.register_parser("p2", parser2)
+    mcp_code_parser.set_default_parser("p1")
     
     # Get specific parser
-    assert agent_tools.get_parser("p2") is parser2
+    assert mcp_code_parser.get_parser("p2") is parser2
     
     # Get default parser
-    assert agent_tools.get_parser() is parser1
+    assert mcp_code_parser.get_parser() is parser1
     
     # Error on non-existent parser
     with pytest.raises(ValueError, match="Parser 'invalid' not found"):
-        agent_tools.get_parser("invalid")
+        mcp_code_parser.get_parser("invalid")
     
     # Error when no default set
-    agent_tools._default_parser = None
+    mcp_code_parser._default_parser = None
     with pytest.raises(ValueError, match="No default parser set"):
-        agent_tools.get_parser()
+        mcp_code_parser.get_parser()
 
 
 @pytest.mark.asyncio
-async def test_parse_code_with_specific_parser(agent_tools):
+async def test_parse_code_with_specific_parser(mcp_code_parser):
     """Test parsing code with specific parser."""
     parser1 = MockParser("parser1")
     parser2 = MockParser("parser2")
     
-    agent_tools.register_parser("p1", parser1)
-    agent_tools.register_parser("p2", parser2)
-    agent_tools.set_default_parser("p1")
+    mcp_code_parser.register_parser("p1", parser1)
+    mcp_code_parser.register_parser("p2", parser2)
+    mcp_code_parser.set_default_parser("p1")
     
     # Use specific parser
-    result = await agent_tools.parse_code("test", "mock", parser_name="p2")
+    result = await mcp_code_parser.parse_code("test", "mock", parser_name="p2")
     assert parser2.parse_called
     assert not parser1.parse_called
     assert result.metadata["parser"] == "parser2"
 
 
 @pytest.mark.asyncio
-async def test_parse_code_with_default_parser(agent_tools):
+async def test_parse_code_with_default_parser(mcp_code_parser):
     """Test parsing code with default parser."""
     parser = MockParser()
-    agent_tools.register_parser("default", parser)
-    agent_tools.set_default_parser("default")
+    mcp_code_parser.register_parser("default", parser)
+    mcp_code_parser.set_default_parser("default")
     
-    result = await agent_tools.parse_code("test", "mock")
+    result = await mcp_code_parser.parse_code("test", "mock")
     assert parser.parse_called
     assert result.success
 
 
 @pytest.mark.asyncio
-async def test_parse_file_with_language_override(agent_tools):
+async def test_parse_file_with_language_override(mcp_code_parser):
     """Test parsing file with language override."""
     parser = MockParser()
-    agent_tools.register_parser("test", parser)
-    agent_tools.set_default_parser("test")
+    mcp_code_parser.register_parser("test", parser)
+    mcp_code_parser.set_default_parser("test")
     
-    result = await agent_tools.parse_file("/test/file.txt", language="mock")
+    result = await mcp_code_parser.parse_file("/test/file.txt", language="mock")
     assert parser.parse_file_called
     assert result.language == "mock"
     assert result.metadata["file"] == "/test/file.txt"
 
 
-def test_list_parsers(agent_tools):
+def test_list_parsers(mcp_code_parser):
     """Test listing registered parsers."""
-    assert agent_tools.list_parsers() == []
+    assert mcp_code_parser.list_parsers() == []
     
-    agent_tools.register_parser("p1", MockParser())
-    agent_tools.register_parser("p2", MockParser())
+    mcp_code_parser.register_parser("p1", MockParser())
+    mcp_code_parser.register_parser("p2", MockParser())
     
-    parsers = agent_tools.list_parsers()
+    parsers = mcp_code_parser.list_parsers()
     assert len(parsers) == 2
     assert "p1" in parsers
     assert "p2" in parsers
 
 
-def test_supported_languages_delegation(agent_tools):
+def test_supported_languages_delegation(mcp_code_parser):
     """Test that supported_languages delegates to parser."""
     parser = MockParser()
-    agent_tools.register_parser("test", parser)
-    agent_tools.set_default_parser("test")
+    mcp_code_parser.register_parser("test", parser)
+    mcp_code_parser.set_default_parser("test")
     
-    languages = agent_tools.supported_languages()
+    languages = mcp_code_parser.supported_languages()
     assert languages == ["mock", "test"]
     
     # With specific parser
-    languages = agent_tools.supported_languages(parser_name="test")
+    languages = mcp_code_parser.supported_languages(parser_name="test")
     assert languages == ["mock", "test"]
 
 
 @pytest.mark.asyncio
-async def test_is_language_available_delegation(agent_tools):
+async def test_is_language_available_delegation(mcp_code_parser):
     """Test that is_language_available delegates to parser."""
     parser = MockParser()
-    agent_tools.register_parser("test", parser)
-    agent_tools.set_default_parser("test")
+    mcp_code_parser.register_parser("test", parser)
+    mcp_code_parser.set_default_parser("test")
     
-    assert await agent_tools.is_language_available("mock") is True
-    assert await agent_tools.is_language_available("invalid") is False
+    assert await mcp_code_parser.is_language_available("mock") is True
+    assert await mcp_code_parser.is_language_available("invalid") is False
 
 
 def test_default_parser_initialization():
@@ -195,7 +195,7 @@ def test_default_parser_initialization():
 
 
 @pytest.mark.asyncio
-async def test_error_propagation(agent_tools):
+async def test_error_propagation(mcp_code_parser):
     """Test that parser errors are properly propagated."""
     class ErrorParser(MockParser):
         async def parse(self, content: str, language: str) -> ParseResult:
@@ -207,9 +207,9 @@ async def test_error_propagation(agent_tools):
             )
     
     parser = ErrorParser()
-    agent_tools.register_parser("error", parser)
-    agent_tools.set_default_parser("error")
+    mcp_code_parser.register_parser("error", parser)
+    mcp_code_parser.set_default_parser("error")
     
-    result = await agent_tools.parse_code("test", "any")
+    result = await mcp_code_parser.parse_code("test", "any")
     assert not result.success
     assert result.error == "Test error"

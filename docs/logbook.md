@@ -47,7 +47,7 @@
 - Think about grammar version management strategy
 
 ### Session Summary
-Successfully created the initial implementation of agent-tools with:
+Successfully created the initial implementation of mcp-code-parser with:
 - Complete project structure and configuration
 - Base parser interface with extensible design
 - Tree-sitter parser with dynamic grammar loading
@@ -179,7 +179,7 @@ The test suite now focuses on meaningful behavior, error paths, and real-world u
 
 ### Verification
 - All 59 tests still pass with `uv run pytest`
-- CLI works correctly with `uv run agent-tools`
+- CLI works correctly with `uv run mcp-code-parser`
 - No changes needed to actual code, only project configuration
 
 ## Session 5: Fixing MCP Server Tests (2025-06-22)
@@ -388,10 +388,10 @@ User clarified they still wanted an MCP-compliant server, not just HTTP. The goa
 ```json
 {
   "mcpServers": {
-    "agent-tools": {
+    "mcp-code-parser": {
       "command": "uv",
-      "args": ["run", "agent-tools", "serve"],
-      "cwd": "/path/to/agent-tools"
+      "args": ["run", "mcp-code-parser", "serve"],
+      "cwd": "/path/to/mcp-code-parser"
     }
   }
 }

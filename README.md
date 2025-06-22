@@ -1,8 +1,8 @@
-# agent-tools
+# mcp-code-parser
 
-MCP client tools providing both Python package interface and MCP endpoint for various utilities. The initial implementation focuses on tree-sitter based code parsing with support for multiple programming languages.
+An opinionated MCP wrapper for tree-sitter that provides structured code parsing for AI agents. It exposes tree-sitter's powerful parsing capabilities through the Model Context Protocol, making it accessible to Claude Desktop, Cursor, Windsurf, and other MCP clients.
 
-## Why agent-tools?
+## Why mcp-code-parser?
 
 ### Why Parse Code Instead of Sending Raw Source?
 
@@ -20,13 +20,13 @@ Sending raw source code to LLMs has significant limitations:
 
 ### Value Beyond Tree-sitter
 
-While tree-sitter is an excellent parsing library, agent-tools adds significant value for AI workflows:
+While tree-sitter is an excellent parsing library, mcp-code-parser adds significant value for AI workflows:
 
 ### 1. **MCP Protocol Integration**
 The primary value is exposing tree-sitter's capabilities through the Model Context Protocol (MCP), making it accessible to MCP clients like Claude Desktop, Cursor, and Windsurf. Without this, these tools cannot use tree-sitter for code analysis.
 
 ### 2. **Intelligent AST Filtering**
-Raw tree-sitter output includes every syntactic element (parentheses, colons, keywords). Agent-tools filters this noise to show only semantically meaningful nodes:
+Raw tree-sitter output includes every syntactic element (parentheses, colons, keywords). MCP Code Parser filters this noise to show only semantically meaningful nodes:
 - Functions, classes, and methods
 - Control flow structures
 - Important expressions
@@ -55,7 +55,7 @@ function_definition
         identifier: 'name'
 ```
 
-Agent-tools filtered output:
+MCP Code Parser filtered output:
 ```
 function_definition
   identifier: 'hello'
@@ -98,8 +98,8 @@ The `BaseParser` abstraction allows adding other parsing backends (LSP, semantic
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and install
-git clone https://github.com/yourusername/agent-tools.git
-cd agent-tools
+git clone https://github.com/yourusername/mcp-code-parser.git
+cd mcp-code-parser
 
 # Basic install (includes Python, JS, TS, Go)
 uv sync
@@ -115,8 +115,8 @@ uv sync --extra cpp
 
 ```bash
 # Install from source
-git clone https://github.com/yourusername/agent-tools.git
-cd agent-tools
+git clone https://github.com/yourusername/mcp-code-parser.git
+cd mcp-code-parser
 pip install -e .
 
 # You'll also need to manually install language packages:
@@ -131,7 +131,7 @@ pip install tree-sitter-python tree-sitter-javascript tree-sitter-typescript tre
 
 ```python
 import asyncio
-from agent_tools import parse_code, parse_file
+from mcp_code_parser import parse_code, parse_file
 
 async def main():
     # Parse code directly
@@ -153,25 +153,25 @@ asyncio.run(main())
 
 ```bash
 # Parse a file
-uv run agent-tools parse example.py
+uv run mcp-code-parser parse example.py
 
 # List supported languages
-uv run agent-tools languages
+uv run mcp-code-parser languages
 
 # Start the MCP server
-uv run agent-tools serve
+uv run mcp-code-parser serve
 ```
 
 **Alternative: Activate the virtual environment first:**
 ```bash
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-agent-tools parse example.py
-agent-tools serve
+mcp-code-parser parse example.py
+mcp-code-parser serve
 ```
 
 ### MCP Server Usage
 
-The agent-tools MCP server is fully compliant with the Model Context Protocol and can be used with any MCP client including Claude Desktop, Windsurf, and Cursor.
+The mcp-code-parser MCP server is fully compliant with the Model Context Protocol and can be used with any MCP client including Claude Desktop, Windsurf, and Cursor.
 
 #### Starting the MCP Server
 
@@ -179,21 +179,21 @@ The agent-tools MCP server is fully compliant with the Model Context Protocol an
 
 ```bash
 # Start MCP server (stdio transport - default)
-uv run agent-tools serve
+uv run mcp-code-parser serve
 
 # Start with DEBUG logging
-uv run agent-tools serve --log-level DEBUG
+uv run mcp-code-parser serve --log-level DEBUG
 
 # Start with custom log file
-uv run agent-tools serve --log-file /tmp/agent-tools.log
+uv run mcp-code-parser serve --log-file /tmp/mcp-code-parser.log
 
 # Start RESTful API server
-uv run agent-tools serve --rest --host 0.0.0.0 --port 8000
+uv run mcp-code-parser serve --rest --host 0.0.0.0 --port 8000
 ```
 
 #### Installing in MCP Clients
 
-All MCP clients use a similar configuration format. You'll need to add agent-tools to the client's MCP servers configuration.
+All MCP clients use a similar configuration format. You'll need to add mcp-code-parser to the client's MCP servers configuration.
 
 ##### Common Configuration
 
@@ -202,26 +202,26 @@ Most MCP clients use this configuration structure:
 ```json
 {
   "mcpServers": {
-    "agent-tools": {
+    "mcp-code-parser": {
       "command": "uv",
-      "args": ["run", "agent-tools", "serve"],
-      "cwd": "/path/to/agent-tools"
+      "args": ["run", "mcp-code-parser", "serve"],
+      "cwd": "/path/to/mcp-code-parser"
     }
   }
 }
 ```
 
-**Important**: Replace `/path/to/agent-tools` with the actual path where you cloned this repository.
+**Important**: Replace `/path/to/mcp-code-parser` with the actual path where you cloned this repository.
 
 For debugging, add `--log-level DEBUG`:
 
 ```json
 {
   "mcpServers": {
-    "agent-tools": {
+    "mcp-code-parser": {
       "command": "uv",
-      "args": ["run", "agent-tools", "serve", "--log-level", "DEBUG"],
-      "cwd": "/path/to/agent-tools"
+      "args": ["run", "mcp-code-parser", "serve", "--log-level", "DEBUG"],
+      "cwd": "/path/to/mcp-code-parser"
     }
   }
 }
@@ -262,7 +262,7 @@ Add the configuration above to this file.
 After adding the configuration:
 
 1. Restart your MCP client
-2. Look for "agent-tools" in the available tools/extensions
+2. Look for "mcp-code-parser" in the available tools/extensions
 3. Try using a tool like `parse_file` to verify it's working
 4. Check logs in the `logs/` directory if you encounter issues
 
@@ -370,13 +370,11 @@ class ParseResult:
 The package is designed with extensibility in mind:
 
 ```
-agent_tools/
+mcp_code_parser/
 ├── parsers/          # Parser implementations
 │   ├── base.py       # Abstract base parser
-│   └── tree_sitter_parser.py
-├── mcp/              # Server implementations
-│   ├── server.py     # MCP server
-│   └── rest_server.py # RESTful API server
+│   └── tree_sitter.py
+├── mcp_server.py     # MCP server implementation
 ├── api.py            # High-level Python API
 └── cli.py            # Command-line interface
 ```
@@ -388,12 +386,12 @@ agent_tools/
 ```bash
 # Using uv
 uv run pytest
-uv run pytest --cov=agent_tools
+uv run pytest --cov=mcp_code_parser
 uv run pytest tests/test_integration.py
 
 # Or with activated virtual environment
 pytest
-pytest --cov=agent_tools
+pytest --cov=mcp_code_parser
 pytest tests/test_integration.py
 
 # Run only MCP protocol tests
@@ -414,13 +412,13 @@ The test suite includes:
 
 ### Adding a New Parser
 
-1. Inherit from `BaseParser` in `agent_tools.parsers.base`
+1. Inherit from `BaseParser` in `mcp_code_parser.parsers.base`
 2. Implement required methods
-3. Register in `AgentTools` class
+3. Register in parser configuration
 
 ### Adding Language Support
 
-1. Add configuration to `agent_tools.parsers.languages`
+1. Add configuration to `mcp_code_parser.parsers.languages`
 2. Specify grammar URL and node types
 3. Test with complex code samples
 
@@ -436,21 +434,21 @@ If you get this error when running the server:
 **Solution:** You're running the command outside the virtual environment. Use `uv run`:
 ```bash
 # ❌ Wrong
-agent-tools serve
+mcp-code-parser serve
 
 # ✅ Correct  
-uv run agent-tools serve
+uv run mcp-code-parser serve
 ```
 
 ### Server not starting
 
 Make sure no other process is using the port:
 ```bash
-# Kill any existing agent-tools servers
-pkill -f "agent-tools serve"
+# Kill any existing mcp-code-parser servers
+pkill -f "mcp-code-parser serve"
 
 # Start fresh
-uv run agent-tools serve
+uv run mcp-code-parser serve
 ```
 
 ### Can't find packages after installation
@@ -461,8 +459,8 @@ Make sure you're using the virtual environment:
 uv pip list | grep tree-sitter
 
 # Run commands with uv
-uv run agent-tools parse myfile.py
-uv run agent-tools serve
+uv run mcp-code-parser parse myfile.py
+uv run mcp-code-parser serve
 ```
 
 ## License

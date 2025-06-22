@@ -1,4 +1,4 @@
-"""Example MCP client for agent-tools."""
+"""Example MCP client for mcp-code-parser."""
 
 import asyncio
 import httpx
@@ -16,9 +16,9 @@ async def call_mcp_tool(tool_name: str, params: dict):
 
 
 async def example_mcp_usage():
-    """Example of using agent-tools via MCP."""
+    """Example of using mcp-code-parser via MCP."""
     print("=== MCP Client Example ===")
-    print("Note: Make sure the MCP server is running (agent-tools serve)")
+    print("Note: Make sure the MCP server is running (mcp-code-parser serve)")
     
     # Example 1: Parse code via MCP
     print("\n1. Parsing Python code:")
@@ -91,7 +91,7 @@ async def main():
         await example_mcp_file_parsing()
     except httpx.ConnectError:
         print("Error: Could not connect to MCP server.")
-        print("Please start the server with: agent-tools serve")
+        print("Please start the server with: mcp-code-parser serve")
     except Exception as e:
         print(f"Error: {e}")
 

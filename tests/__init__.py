@@ -1,1 +1,1 @@
-"""Tests for agent-tools."""
+"""Tests for mcp-code-parser."""

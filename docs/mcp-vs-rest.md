@@ -1,6 +1,6 @@
 # MCP vs RESTful API: A Comparison
 
-This document explains the differences between the Model Context Protocol (MCP) and RESTful API interfaces provided by agent-tools, helping you choose the right one for your use case.
+This document explains the differences between the Model Context Protocol (MCP) and RESTful API interfaces provided by mcp-code-parser, helping you choose the right one for your use case.
 
 ## Overview
 

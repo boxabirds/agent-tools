@@ -1,4 +1,4 @@
-"""Basic usage examples for agent-tools."""
+"""Basic usage examples for mcp-code-parser."""
 
 import asyncio
 from mcp_code_parser import parse_code, parse_file, supported_languages

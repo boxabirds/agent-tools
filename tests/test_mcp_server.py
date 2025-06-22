@@ -85,7 +85,7 @@ async def test_mcp_health_check(mcp_client):
     data = response.json()
     
     assert data["status"] == "healthy"
-    assert data["service"] == "agent-tools"
+    assert data["service"] == "mcp-code-parser"
     assert "timestamp" in data
     assert data["version"] == "0.1.0"
 

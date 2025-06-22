@@ -19,13 +19,19 @@ logger = get_logger("parsers.tree_sitter")
 
 # Pre-load language modules to ensure they're available in subprocesses
 _preloaded_modules = {}
-for lang in ["python", "javascript", "typescript", "go"]:
-    try:
-        module_name = f"tree_sitter_{lang}"
-        _preloaded_modules[lang] = importlib.import_module(module_name)
-        logger.debug(f"Pre-loaded {module_name}")
-    except ImportError:
-        logger.debug(f"Could not pre-load {module_name}")
+
+def _init_preloaded_modules():
+    """Initialize preloaded modules - called on first use."""
+    if _preloaded_modules:  # Already initialized
+        return
+        
+    for lang in ["python", "javascript", "typescript", "go"]:
+        try:
+            module_name = f"tree_sitter_{lang}"
+            _preloaded_modules[lang] = importlib.import_module(module_name)
+            logger.debug(f"Pre-loaded {module_name}")
+        except ImportError as e:
+            logger.debug(f"Could not pre-load {module_name}: {e}")
 
 
 class TreeSitterParser(BaseParser):
@@ -163,6 +169,9 @@ class TreeSitterParser(BaseParser):
     
     async def _get_or_install_language(self, language: str) -> tree_sitter.Language:
         """Get language object, installing if necessary."""
+        # Initialize preloaded modules on first use
+        _init_preloaded_modules()
+        
         # Check cache first
         if language in self._language_cache:
             return self._language_cache[language]
@@ -192,6 +201,10 @@ class TreeSitterParser(BaseParser):
                 # Try to import existing module
                 module = importlib.import_module(module_name)
             except ImportError as e:
+                # Log more details about the import error
+                logger.error(f"Import error details: {e}")
+                logger.error(f"sys.path: {sys.path[:3]}")
+                logger.error(f"Module name: {module_name}")
                 raise RuntimeError(
                     f"Language package {package_name} not installed. "
                     f"Install it with: uv add {package_name} or uv sync --extra languages"

@@ -22,11 +22,11 @@ def test_cache_directory_creation():
         
         with patch("pathlib.Path.mkdir") as mock_mkdir:
             cache_dir = get_cache_dir()
-            assert cache_dir == Path("/fake/home/.cache/agent-tools")
+            assert cache_dir == Path("/fake/home/.cache/mcp-code-parser")
             mock_mkdir.assert_called_with(parents=True, exist_ok=True)
             
             grammar_dir = get_grammar_cache_dir()
-            assert grammar_dir == Path("/fake/home/.cache/agent-tools/grammars")
+            assert grammar_dir == Path("/fake/home/.cache/mcp-code-parser/grammars")
             # get_cache_dir() called twice (once directly, once from get_grammar_cache_dir)
             # plus one call for creating grammars subdirectory
             assert mock_mkdir.call_count >= 2

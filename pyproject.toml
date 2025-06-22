@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcpagenttools"
+name = "mcp-code-parser"
 dynamic = ["version"]
 description = "MCP server for tree-sitter based code parsing"
 readme = "README.md"
@@ -51,18 +51,18 @@ cpp = [
 ]
 
 [project.scripts]
-agenttools = "agenttools.cli:main"
+mcp-code-parser = "mcp_code_parser.cli:main"
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/mcpagenttools"
-"Documentation" = "https://github.com/yourusername/mcpagenttools/blob/main/docs/user-guide.md"
-"Issues" = "https://github.com/yourusername/mcpagenttools/issues"
+"Homepage" = "https://github.com/yourusername/mcp-code-parser"
+"Documentation" = "https://github.com/yourusername/mcp-code-parser/blob/main/docs/user-guide.md"
+"Issues" = "https://github.com/yourusername/mcp-code-parser/issues"
 
 [tool.setuptools]
-packages = ["agenttools", "agenttools.parsers", "agenttools.mcp", "agenttools.rest"]
+packages = ["mcp_code_parser", "mcp_code_parser.parsers"]
 
 [tool.setuptools.dynamic]
-version = {attr = "agenttools.__version__.__version__"}
+version = {attr = "mcp_code_parser.__version__.__version__"}
 
 [tool.black]
 line-length = 100

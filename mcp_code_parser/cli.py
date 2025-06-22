@@ -1,4 +1,4 @@
-"""Command-line interface for agent-tools."""
+"""Command-line interface for mcp-code-parser."""
 
 import asyncio
 import json
@@ -12,7 +12,7 @@ from mcp_code_parser import parse_file, supported_languages
 
 @click.group()
 def cli():
-    """Agent Tools CLI - AI agent utilities with code parsing."""
+    """MCP Code Parser CLI - Tree-sitter based code parsing for AI agents."""
     pass
 
 
@@ -65,15 +65,12 @@ def languages():
 
 
 @cli.command()
-@click.option("--rest", is_flag=True, help="Run RESTful API server instead of MCP stdio server")
-@click.option("--host", default="0.0.0.0", help="Host to bind to (REST mode only)")
-@click.option("--port", default=8000, type=int, help="Port to bind to (REST mode only)")
 @click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]), 
               default="INFO", help="Set logging level")
 @click.option("--log-file", type=click.Path(), help="Log to specific file")
 @click.option("--log-dir", type=click.Path(), default="logs", help="Directory for log files")
-def serve(rest: bool, host: str, port: int, log_level: str, log_file: str, log_dir: str):
-    """Start the server (MCP stdio by default, RESTful API with --rest flag)."""
+def serve(log_level: str, log_file: str, log_dir: str):
+    """Start the MCP server (stdio transport)."""
     import os
     
     # Set environment variables for logging before importing server
@@ -83,16 +80,11 @@ def serve(rest: bool, host: str, port: int, log_level: str, log_file: str, log_d
     os.environ["AGENT_TOOLS_LOG_DIR"] = log_dir
     
     from mcp_code_parser.mcp_server import run_stdio
-    from mcp_code_parser.rest.server import run_server as run_rest
     
-    if rest:
-        click.echo(f"Starting RESTful API server on {host}:{port}")
-        run_rest(host, port)
-    else:
-        # MCP stdio mode - no echo to stdout (only stderr)
-        import sys
-        sys.stderr.write("Starting MCP server (stdio transport)\n")
-        run_stdio()
+    # MCP stdio mode - no echo to stdout (only stderr)
+    import sys
+    sys.stderr.write("Starting MCP server (stdio transport)\n")
+    run_stdio()
 
 
 def main():

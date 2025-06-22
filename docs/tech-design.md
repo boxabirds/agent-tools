@@ -2,10 +2,10 @@
 
 ## Architecture Overview
 
-The agent-tools package provides a modular architecture for AI agent utilities with both direct Python API access and MCP (Model Control Protocol) endpoint exposure.
+The mcp-code-parser package provides a modular architecture for AI agent utilities with both direct Python API access and MCP (Model Control Protocol) endpoint exposure.
 
 ```
-agent-tools/
+mcp-code-parser/
 ├── parsers/          # Code parsing implementations
 │   ├── base.py       # Abstract base parser interface
 │   ├── tree_sitter_parser.py  # Tree-sitter wrapper
@@ -20,7 +20,7 @@ agent-tools/
 
 ## Core Components
 
-### 1. Parser Interface (agent_tools.parsers.base)
+### 1. Parser Interface (mcp_code_parser.parsers.base)
 
 Abstract base class defining the parser contract:
 
@@ -39,7 +39,7 @@ class BaseParser(ABC):
 
 **Dynamic Grammar Loading**:
 - Grammars downloaded on first use
-- Cached locally in `~/.cache/agent-tools/grammars/`
+- Cached locally in `~/.cache/mcp-code-parser/grammars/`
 - Version pinning for reproducibility
 
 **AST Representation**:

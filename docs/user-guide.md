@@ -1,6 +1,6 @@
 # MCP Code Parser User Guide
 
-This guide walks you through using agent-tools' code parsing functionality in three different ways:
+This guide walks you through using mcp-code-parser' code parsing functionality in three different ways:
 1. [Direct Python API](#python-api-usage)
 2. [RESTful API](#restful-api-usage)
 3. [Model Context Protocol (MCP)](#mcp-usage)
@@ -30,16 +30,16 @@ This guide walks you through using agent-tools' code parsing functionality in th
 
 ## Installation
 
-First, install agent-tools using uv (recommended) or pip:
+First, install mcp-code-parser using uv (recommended) or pip:
 
 ```bash
 # Using uv (recommended)
-git clone https://github.com/yourusername/agent-tools.git
-cd agent-tools
+git clone https://github.com/yourusername/mcp-code-parser.git
+cd mcp-code-parser
 uv sync
 
 # Using pip
-pip install agent-tools
+pip install mcp-code-parser
 ```
 
 ## Python API Usage
@@ -52,7 +52,7 @@ Parse code directly by providing the source code and language:
 
 ```python
 import asyncio
-from agent_tools import parse_code
+from mcp_code_parser import parse_code
 
 async def main():
     # Parse Python code
@@ -92,7 +92,7 @@ Parse code from files with automatic language detection:
 
 ```python
 import asyncio
-from agent_tools import parse_file
+from mcp_code_parser import parse_file
 
 async def main():
     # Parse a file (language auto-detected from extension)
@@ -123,7 +123,7 @@ The parser handles errors gracefully and provides informative error messages:
 
 ```python
 import asyncio
-from agent_tools import parse_code, parse_file
+from mcp_code_parser import parse_code, parse_file
 
 async def main():
     # Example 1: Unsupported language
@@ -157,7 +157,7 @@ Process multiple files concurrently:
 ```python
 import asyncio
 from pathlib import Path
-from agent_tools import parse_file
+from mcp_code_parser import parse_file
 
 async def analyze_codebase(directory: Path):
     """Analyze all Python files in a directory."""
@@ -188,7 +188,7 @@ Extract specific information from the AST:
 
 ```python
 import asyncio
-from agent_tools import parse_code
+from mcp_code_parser import parse_code
 
 def extract_functions(ast_text: str) -> list[str]:
     """Extract function names from AST."""
@@ -238,13 +238,13 @@ Start the REST server using the CLI:
 
 ```bash
 # Start with default settings (port 8000)
-uv run agent-tools serve --rest
+uv run mcp-code-parser serve --rest
 
 # Start on a specific port and host
-uv run agent-tools serve --rest --host 0.0.0.0 --port 8080
+uv run mcp-code-parser serve --rest --host 0.0.0.0 --port 8080
 
 # Start with debug logging
-uv run agent-tools serve --rest --log-level DEBUG
+uv run mcp-code-parser serve --rest --log-level DEBUG
 ```
 
 ### API Endpoints
@@ -438,7 +438,7 @@ asyncio.run(main())
 
 ## MCP Usage
 
-The Model Context Protocol (MCP) allows AI assistants like Claude Desktop to use agent-tools directly.
+The Model Context Protocol (MCP) allows AI assistants like Claude Desktop to use mcp-code-parser directly.
 
 ### MCP Server Configuration
 
@@ -446,21 +446,21 @@ The MCP server runs using stdio transport (standard input/output) and exposes to
 
 ### Claude Desktop Integration
 
-Add agent-tools to your Claude Desktop configuration:
+Add mcp-code-parser to your Claude Desktop configuration:
 
 1. Open the configuration file:
    - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
    - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-2. Add the agent-tools server:
+2. Add the mcp-code-parser server:
 
 ```json
 {
   "mcpServers": {
-    "agent-tools": {
+    "mcp-code-parser": {
       "command": "uv",
-      "args": ["run", "agent-tools", "serve"],
-      "cwd": "/path/to/agent-tools"
+      "args": ["run", "mcp-code-parser", "serve"],
+      "cwd": "/path/to/mcp-code-parser"
     }
   }
 }
@@ -471,7 +471,7 @@ Add agent-tools to your Claude Desktop configuration:
 4. You can now ask Claude to parse code for you:
    - "Parse this Python file: /path/to/file.py"
    - "Show me the AST structure of this JavaScript code: ..."
-   - "What languages does agent-tools support?"
+   - "What languages does mcp-code-parser support?"
 
 ### Other MCP Clients
 
@@ -482,10 +482,10 @@ Config location: `~/.cursor/mcp/servers.json`
 ```json
 {
   "mcpServers": {
-    "agent-tools": {
+    "mcp-code-parser": {
       "command": "uv",
-      "args": ["run", "agent-tools", "serve"],
-      "cwd": "/path/to/agent-tools"
+      "args": ["run", "mcp-code-parser", "serve"],
+      "cwd": "/path/to/mcp-code-parser"
     }
   }
 }
@@ -574,18 +574,18 @@ Enable debug logging to troubleshoot MCP issues:
 ```json
 {
   "mcpServers": {
-    "agent-tools": {
+    "mcp-code-parser": {
       "command": "uv",
-      "args": ["run", "agent-tools", "serve", "--log-level", "DEBUG"],
-      "cwd": "/path/to/agent-tools"
+      "args": ["run", "mcp-code-parser", "serve", "--log-level", "DEBUG"],
+      "cwd": "/path/to/mcp-code-parser"
     }
   }
 }
 ```
 
 Logs are saved to:
-- Default: `logs/agent_tools_YYYYMMDD_HHMMSS.log`
-- Claude Desktop logs: `~/Library/Logs/Claude/mcp-server-agent-tools.log` (macOS)
+- Default: `logs/mcp_code_parser_YYYYMMDD_HHMMSS.log`
+- Claude Desktop logs: `~/Library/Logs/Claude/mcp-server-mcp-code-parser.log` (macOS)
 
 ## Language Support
 
@@ -612,7 +612,7 @@ Additional languages can be installed:
 
 #### Python API
 ```python
-from agent_tools import supported_languages
+from mcp_code_parser import supported_languages
 
 # Get list of supported languages
 languages = supported_languages()
@@ -629,7 +629,7 @@ curl http://localhost:8000/languages/python
 ```
 
 #### MCP
-Ask the AI assistant: "What languages does agent-tools support?"
+Ask the AI assistant: "What languages does mcp-code-parser support?"
 
 ## Understanding AST Output
 
@@ -651,7 +651,7 @@ module                          # Root node for Python files
 1. **Indentation** indicates hierarchy - child nodes are indented under parents
 2. **Node types** (like `function_definition`) describe the syntactic element
 3. **Leaf nodes** show actual code content (like `identifier: 'hello'`)
-4. **Filtering** - agent-tools filters out pure syntax tokens (like `:`, `(`, `)`) to focus on meaningful structure
+4. **Filtering** - mcp-code-parser filters out pure syntax tokens (like `:`, `(`, `)`) to focus on meaningful structure
 
 ### Using AST for Analysis
 
@@ -673,8 +673,8 @@ The AST can be used for various code analysis tasks:
 **Solutions**:
 1. Make sure you're running commands with `uv run`:
    ```bash
-   uv run agent-tools parse example.py  # ✓ Correct
-   agent-tools parse example.py         # ✗ Wrong
+   uv run mcp-code-parser parse example.py  # ✓ Correct
+   mcp-code-parser parse example.py         # ✗ Wrong
    ```
 
 2. Reinstall dependencies:
@@ -689,16 +689,16 @@ The AST can be used for various code analysis tasks:
 
 #### MCP server not connecting
 
-**Problem**: Claude Desktop shows "Failed to connect to agent-tools"
+**Problem**: Claude Desktop shows "Failed to connect to mcp-code-parser"
 
 **Solutions**:
 1. Verify the path in config is correct
 2. Test the server manually:
    ```bash
-   cd /path/to/agent-tools
-   uv run agent-tools serve
+   cd /path/to/mcp-code-parser
+   uv run mcp-code-parser serve
    ```
-3. Check logs in `~/Library/Logs/Claude/mcp-server-agent-tools.log`
+3. Check logs in `~/Library/Logs/Claude/mcp-server-mcp-code-parser.log`
 
 #### REST API connection refused
 
@@ -707,7 +707,7 @@ The AST can be used for various code analysis tasks:
 **Solutions**:
 1. Make sure the server is running:
    ```bash
-   uv run agent-tools serve --rest
+   uv run mcp-code-parser serve --rest
    ```
 2. Check if port is already in use:
    ```bash
@@ -715,7 +715,7 @@ The AST can be used for various code analysis tasks:
    ```
 3. Try a different port:
    ```bash
-   uv run agent-tools serve --rest --port 8080
+   uv run mcp-code-parser serve --rest --port 8080
    ```
 
 ### Debug Mode
@@ -727,10 +727,10 @@ Enable debug logging for detailed information:
 LOG_LEVEL=DEBUG uv run python your_script.py
 
 # For REST server
-uv run agent-tools serve --rest --log-level DEBUG
+uv run mcp-code-parser serve --rest --log-level DEBUG
 
 # For MCP server
-uv run agent-tools serve --log-level DEBUG
+uv run mcp-code-parser serve --log-level DEBUG
 ```
 
 ### Getting Help
@@ -738,4 +738,4 @@ uv run agent-tools serve --log-level DEBUG
 - Check the [README](../README.md) for installation instructions
 - See [Technical Design](tech-design.md) for architecture details
 - Review [MCP vs REST](mcp-vs-rest.md) for protocol comparison
-- Report issues at: https://github.com/yourusername/agent-tools/issues
+- Report issues at: https://github.com/yourusername/mcp-code-parser/issues

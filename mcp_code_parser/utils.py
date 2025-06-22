@@ -1,4 +1,4 @@
-"""Common utilities for agent-tools."""
+"""Common utilities for mcp-code-parser."""
 
 import hashlib
 import os
@@ -7,8 +7,8 @@ from typing import Optional
 
 
 def get_cache_dir() -> Path:
-    """Get or create cache directory for agent-tools."""
-    cache_dir = Path.home() / ".cache" / "agent-tools"
+    """Get or create cache directory for mcp-code-parser."""
+    cache_dir = Path.home() / ".cache" / "mcp-code-parser"
     cache_dir.mkdir(parents=True, exist_ok=True)
     return cache_dir
 

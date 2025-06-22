@@ -1,4 +1,4 @@
-"""Simple MCP server implementation for agent-tools."""
+"""Simple MCP server implementation for mcp-code-parser."""
 
 import json
 import logging
@@ -25,7 +25,7 @@ class MCPHandler(BaseHTTPRequestHandler):
         if parsed_path.path == "/health":
             self._send_json_response({
                 "status": "healthy",
-                "service": "agent-tools",
+                "service": "mcp-code-parser",
                 "timestamp": datetime.utcnow().isoformat(),
                 "version": "0.1.0"
             })
@@ -177,7 +177,7 @@ Total languages: {len(languages)}
 def run_server(host: str = "0.0.0.0", port: int = 8000):
     """Run the MCP server."""
     server = HTTPServer((host, port), MCPHandler)
-    print(f"Starting agent-tools MCP server on http://{host}:{port}")
+    print(f"Starting mcp-code-parser MCP server on http://{host}:{port}")
     print("Available endpoints:")
     print("  GET  /health          - Health check")
     print("  GET  /languages       - List supported languages")

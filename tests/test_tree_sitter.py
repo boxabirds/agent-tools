@@ -24,15 +24,14 @@ async def test_parse_simple_python(parser):
     """Test parsing simple Python code."""
     code = "def hello():\n    return 'world'"
     
-    # Since we can't actually download/build grammars in tests,
-    # we'll test the error handling
     result = await parser.parse(code, "python")
     
-    # Should fail gracefully when grammar not available
-    assert not result.success
-    assert ("Language package tree-sitter-python not installed" in result.error or 
-            "tree-sitter CLI not found" in result.error or 
-            "Failed to clone repository" in result.error)
+    # Should succeed when grammar is available
+    assert result.success
+    assert result.language == "python"
+    assert "function_definition" in result.ast_text
+    assert "hello" in result.ast_text
+    assert result.error is None
     
 
 @pytest.mark.asyncio
@@ -52,9 +51,10 @@ async def test_parse_file_encoding_issues(parser, tmp_path):
     test_file.write_bytes("# Café\ndef función():\n    pass".encode("latin-1"))
     
     result = await parser.parse_file(str(test_file))
-    # Will fail due to missing grammar, but should still detect language
-    assert not result.success
+    # Should succeed and handle encoding properly
+    assert result.success
     assert result.language == "python"
+    assert "function_definition" in result.ast_text
 
 
 @pytest.mark.asyncio
@@ -87,52 +87,27 @@ async def test_language_detection_edge_cases(parser, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_clone_repository_failure(parser):
-    """Test handling of git clone failures."""
-    with patch("asyncio.create_subprocess_exec") as mock_exec:
-        # Simulate git clone failure
-        mock_process = AsyncMock()
-        mock_process.communicate.return_value = (b"", b"fatal: repository not found")
-        mock_process.returncode = 1
-        mock_exec.return_value = mock_process
+async def test_missing_language_error(parser):
+    """Test error when language package is missing."""
+    # Try to parse with a mocked missing language
+    with patch("importlib.import_module") as mock_import:
+        mock_import.side_effect = ImportError("No module named 'tree_sitter_fake'")
         
-        with pytest.raises(GrammarNotFoundError) as exc_info:
-            await parser._clone_repository("https://invalid.url", Path("/tmp/test"))
+        result = await parser.parse("code", "fake")
         
-        assert "Failed to clone repository" in str(exc_info.value)
+        assert not result.success
+        assert "not supported" in result.error
 
 
 @pytest.mark.asyncio
-async def test_build_grammar_failure(parser, tmp_path):
-    """Test handling of grammar build failures."""
-    # Since tree-sitter CLI is not available, this should fail
-    with pytest.raises(GrammarNotFoundError) as exc_info:
-        await parser._build_grammar("test", tmp_path, tmp_path / "output.so")
+async def test_ast_formatting_includes_function_definition(parser):
+    """Test that AST formatting includes function definitions."""
+    code = "def test():\n    pass"
+    result = await parser.parse(code, "python")
     
-    assert "tree-sitter CLI not found" in str(exc_info.value)
-
-
-@pytest.mark.asyncio
-async def test_ast_formatting_node_filtering(parser):
-    """Test AST node filtering based on language config."""
-    # Mock a simple tree structure
-    mock_node = MagicMock()
-    mock_node.type = "function_definition"
-    mock_node.child_count = 0
-    mock_node.start_byte = 0
-    mock_node.end_byte = 10
-    
-    formatted = parser._format_tree_sitter_ast(mock_node, "python", "def test(): pass")
-    assert "function_definition" in formatted
-    
-    # Test filtering noise nodes
-    noise_node = MagicMock()
-    noise_node.type = ";"
-    noise_node.child_count = 0
-    noise_node.children = []
-    
-    formatted = parser._format_tree_sitter_ast(noise_node, "python", ";")
-    assert formatted == ""  # Noise nodes should be filtered
+    assert result.success
+    assert "function_definition" in result.ast_text
+    assert "identifier: 'test'" in result.ast_text
 
 
 @pytest.mark.asyncio
@@ -165,26 +140,11 @@ async def test_concurrent_parsing(parser):
 
 
 @pytest.mark.asyncio
-async def test_grammar_path_generation(parser):
-    """Test platform-specific grammar path generation."""
-    path = parser._get_grammar_path("python")
+async def test_node_count_in_metadata(parser):
+    """Test that node count is included in metadata."""
+    code = "x = 1\ny = 2"
+    result = await parser.parse(code, "python")
     
-    assert path.name.startswith("python_")
-    assert path.name.endswith(".so")
-    assert path.parent == parser._grammar_dir
-
-
-@pytest.mark.asyncio
-async def test_node_counting(parser):
-    """Test node counting in AST."""
-    # Create mock tree structure
-    root = MagicMock()
-    child1 = MagicMock()
-    child2 = MagicMock()
-    
-    root.children = [child1, child2]
-    child1.children = []
-    child2.children = []
-    
-    count = parser._count_nodes(root)
-    assert count == 3  # root + 2 children
+    assert result.success
+    assert "node_count" in result.metadata
+    assert result.metadata["node_count"] > 0

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare raw tree-sitter output vs agent-tools filtered output."""
+"""Compare raw tree-sitter output vs mcp-code-parser filtered output."""
 
 import asyncio
 
@@ -94,7 +94,7 @@ print(raw_output)
 
 print("\n=== AGENT-TOOLS FILTERED OUTPUT (RELEVANT NODES ONLY) ===")
 
-# What agent-tools would show with configured filters
+# What mcp-code-parser would show with configured filters
 filtered_output = """module
   function_definition
     block
@@ -135,7 +135,7 @@ This filtering is particularly valuable for AI agents that need to:
 - Get a high-level view of what the code does
 """)
 
-# Now show actual agent-tools usage
+# Now show actual mcp-code-parser usage
 print("\n=== ACTUAL AGENT-TOOLS USAGE ===")
 
 async def demo():
@@ -153,11 +153,11 @@ async def demo():
     if len(result.ast_text.split('\n')) > 20:
         print("... (truncated)")
 
-# Only run if agent_tools is available
+# Only run if mcp_code_parser is available
 try:
     asyncio.run(demo())
 except ImportError:
-    print("\n(agent_tools not available in environment - showing simulated output)")
+    print("\n(mcp_code_parser not available in environment - showing simulated output)")
     print("Success: True")
     print("Language: python")
     print("Node count: 28")

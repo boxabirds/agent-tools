@@ -1,4 +1,4 @@
-"""Integration tests for agent-tools parser."""
+"""Integration tests for mcp-code-parser parser."""
 
 import asyncio
 from pathlib import Path

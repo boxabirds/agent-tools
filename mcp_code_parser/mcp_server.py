@@ -1,4 +1,4 @@
-"""MCP server implementation for agent-tools."""
+"""MCP server implementation for mcp-code-parser."""
 
 import os
 from typing import Optional
@@ -19,7 +19,7 @@ mcp_logger = get_logger("mcp.server")
 
 # Create MCP server
 mcp = FastMCP(
-    name="agent-tools",
+    name="mcp-code-parser",
     version="0.1.0",
     description="Tree-sitter based code parsing tools for AI agents"
 )

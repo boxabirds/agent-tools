@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare what tree-sitter provides vs what agent-tools adds."""
+"""Compare what tree-sitter provides vs what mcp-code-parser adds."""
 
 print("=== TREE-SITTER NATIVE CAPABILITIES ===\n")
 
