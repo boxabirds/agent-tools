@@ -68,8 +68,20 @@ def languages():
 @click.option("--http", is_flag=True, help="Run HTTP server instead of MCP stdio server")
 @click.option("--host", default="0.0.0.0", help="Host to bind to (HTTP mode only)")
 @click.option("--port", default=8000, type=int, help="Port to bind to (HTTP mode only)")
-def serve(http: bool, host: str, port: int):
+@click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]), 
+              default="INFO", help="Set logging level")
+@click.option("--log-file", type=click.Path(), help="Log to specific file")
+@click.option("--log-dir", type=click.Path(), default="logs", help="Directory for log files")
+def serve(http: bool, host: str, port: int, log_level: str, log_file: str, log_dir: str):
     """Start the server (MCP stdio by default, HTTP with --http flag)."""
+    import os
+    
+    # Set environment variables for logging before importing server
+    os.environ["AGENT_TOOLS_LOG_LEVEL"] = log_level
+    if log_file:
+        os.environ["AGENT_TOOLS_LOG_FILE"] = log_file
+    os.environ["AGENT_TOOLS_LOG_DIR"] = log_dir
+    
     from agent_tools.mcp.server import run_stdio, run_http
     
     if http:

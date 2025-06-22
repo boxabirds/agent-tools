@@ -1,5 +1,6 @@
 """MCP server implementation for agent-tools."""
 
+import os
 from typing import Optional
 
 from mcp.server.fastmcp import FastMCP
@@ -7,6 +8,14 @@ from mcp.server.fastmcp import FastMCP
 from agent_tools import parse_code as parse_code_func
 from agent_tools import parse_file as parse_file_func
 from agent_tools import supported_languages
+from agent_tools.logging import setup_logging, get_logger
+
+# Set up logging
+log_level = os.getenv("AGENT_TOOLS_LOG_LEVEL", "INFO")
+log_file = os.getenv("AGENT_TOOLS_LOG_FILE")
+log_dir = os.getenv("AGENT_TOOLS_LOG_DIR", "logs")
+logger = setup_logging(log_level, log_file, log_dir)
+mcp_logger = get_logger("mcp.server")
 
 # Create MCP server
 mcp = FastMCP(
@@ -27,7 +36,13 @@ async def parse_code(content: str, language: str) -> dict:
     Returns:
         Dictionary with parsing results including AST
     """
+    mcp_logger.debug(f"parse_code called with language={language}, content_length={len(content)}")
+    
     result = await parse_code_func(content, language)
+    
+    mcp_logger.debug(f"parse_code result: success={result.success}, ast_length={len(result.ast_text) if result.ast_text else 0}")
+    if result.error:
+        mcp_logger.warning(f"parse_code error: {result.error}")
     
     return {
         "success": result.success,
@@ -49,7 +64,13 @@ async def parse_file(file_path: str, language: Optional[str] = None) -> dict:
     Returns:
         Dictionary with parsing results including AST
     """
+    mcp_logger.debug(f"parse_file called with file_path={file_path}, language={language}")
+    
     result = await parse_file_func(file_path, language)
+    
+    mcp_logger.debug(f"parse_file result: success={result.success}, detected_language={result.language}")
+    if result.error:
+        mcp_logger.warning(f"parse_file error: {result.error}")
     
     return {
         "success": result.success,
@@ -67,7 +88,12 @@ def list_languages() -> dict:
     Returns:
         Dictionary with list of supported languages
     """
+    mcp_logger.debug("list_languages called")
+    
     languages = supported_languages()
+    
+    mcp_logger.debug(f"list_languages returning {len(languages)} languages")
+    
     return {
         "languages": sorted(languages),
         "count": len(languages)
@@ -84,6 +110,8 @@ async def check_language(language: str) -> dict:
     Returns:
         Dictionary with support status and availability
     """
+    mcp_logger.debug(f"check_language called with language={language}")
+    
     from agent_tools.api import AgentTools
     from agent_tools.parsers.tree_sitter_parser import TreeSitterParser
     
@@ -98,6 +126,8 @@ async def check_language(language: str) -> dict:
     else:
         grammar_available = False
     
+    mcp_logger.debug(f"check_language result: supported={supported}, grammar_available={grammar_available}")
+    
     return {
         "language": language,
         "supported": supported,
@@ -108,6 +138,8 @@ async def check_language(language: str) -> dict:
 
 def run_stdio():
     """Run MCP server with stdio transport."""
+    mcp_logger.info("Starting MCP server in stdio mode")
+    mcp_logger.info(f"Log level: {log_level}, Log directory: {log_dir}")
     # FastMCP handles all the stdio setup internally
     mcp.run(transport="stdio")
 

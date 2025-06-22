@@ -2,6 +2,82 @@
 
 AI agent tools providing both Python package interface and MCP endpoint for various utilities. The initial implementation focuses on tree-sitter based code parsing with support for multiple programming languages.
 
+## Why agent-tools?
+
+### Why Parse Code Instead of Sending Raw Source?
+
+Sending raw source code to LLMs has significant limitations:
+
+1. **Context Window Efficiency**: A 1,000-line file might have only 50 lines relevant to your query. Parsing lets you extract just the function signatures, class structures, or specific constructs you need.
+
+2. **Structured Understanding**: LLMs work better with structured data. An AST shows relationships explicitly (which class contains which methods, scope boundaries, etc.) rather than relying on the LLM to infer structure from indentation and syntax.
+
+3. **Cross-Language Consistency**: Different languages express the same concepts differently. ASTs normalize these into consistent structures, making it easier to work across languages.
+
+4. **Precise Navigation**: You can query specific parts of code ("show me all error handlers" or "find recursive functions") without regex gymnastics or hoping the LLM notices patterns.
+
+5. **Token Economy**: AST representations are more compact than full source code while preserving all structural information. This means more effective use of context windows and lower API costs.
+
+### Value Beyond Tree-sitter
+
+While tree-sitter is an excellent parsing library, agent-tools adds significant value for AI workflows:
+
+### 1. **MCP Protocol Integration**
+The primary value is exposing tree-sitter's capabilities through the Model Context Protocol (MCP), making it accessible to AI agents like Claude Desktop, Cursor, and Windsurf. Without this, these tools cannot use tree-sitter for code analysis.
+
+### 2. **Intelligent AST Filtering**
+Raw tree-sitter output includes every syntactic element (parentheses, colons, keywords). Agent-tools filters this noise to show only semantically meaningful nodes:
+- Functions, classes, and methods
+- Control flow structures
+- Important expressions
+- Actual code snippets in leaf nodes
+
+This makes the AST actually useful for AI agents that need to understand code structure without drowning in syntax.
+
+**Example: Python function parsing**
+
+Raw tree-sitter output:
+```
+function_definition
+  def: 'def'
+  identifier: 'hello'
+  parameters
+    (: '('
+    identifier: 'name'
+    ): ')'
+  :: ':'
+  block
+    return_statement
+      return: 'return'
+      binary_operator
+        string: '"Hello, "'
+        +: '+'
+        identifier: 'name'
+```
+
+Agent-tools filtered output:
+```
+function_definition
+  identifier: 'hello'
+  parameters
+    identifier: 'name'
+  block
+    return_statement
+      binary_operator
+        string: '"Hello, "'
+        identifier: 'name'
+```
+
+### 3. **Production-Ready Infrastructure**
+- Automatic file encoding detection (UTF-8, Latin-1, ASCII, UTF-16)
+- Pre-packaged language grammars (no manual installation)
+- Structured error handling with consistent results
+- Comprehensive async/await support
+- Proper logging and debugging tools
+
+### 4. **Extensible Architecture**
+The `BaseParser` abstraction allows adding other parsing backends (LSP, semantic analysis) without changing the API, making it future-proof for evolving AI needs.
+
 ## Features
 
 - 🌳 **Tree-sitter based code parsing** - Fast and accurate AST generation
@@ -105,16 +181,23 @@ The agent-tools MCP server is fully compliant with the Model Context Protocol an
 # Start MCP server (stdio transport - default)
 uv run agent-tools serve
 
+# Start with DEBUG logging
+uv run agent-tools serve --log-level DEBUG
+
+# Start with custom log file
+uv run agent-tools serve --log-file /tmp/agent-tools.log
+
 # Start HTTP server (legacy, non-MCP)
 uv run agent-tools serve --http --host 0.0.0.0 --port 8000
 ```
 
-#### Configuring for Claude Desktop
+#### Installing in MCP Clients
 
-Add the following to your Claude Desktop config file:
+All MCP clients use a similar configuration format. You'll need to add agent-tools to the client's MCP servers configuration.
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+##### Common Configuration
+
+Most MCP clients use this configuration structure:
 
 ```json
 {
@@ -127,6 +210,61 @@ Add the following to your Claude Desktop config file:
   }
 }
 ```
+
+**Important**: Replace `/path/to/agent-tools` with the actual path where you cloned this repository.
+
+For debugging, add `--log-level DEBUG`:
+
+```json
+{
+  "mcpServers": {
+    "agent-tools": {
+      "command": "uv",
+      "args": ["run", "agent-tools", "serve", "--log-level", "DEBUG"],
+      "cwd": "/path/to/agent-tools"
+    }
+  }
+}
+```
+
+##### Claude Desktop
+
+**Config file location:**
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+Add the configuration above to this file. Create the file if it doesn't exist.
+
+##### Cursor
+
+**Config file location:**
+- macOS: `~/.cursor/mcp/servers.json`
+- Windows: `%USERPROFILE%\.cursor\mcp\servers.json`
+- Linux: `~/.cursor/mcp/servers.json`
+
+Add the configuration above to this file.
+
+##### Windsurf
+
+**Config file location:**
+- macOS: `~/Library/Application Support/windsurf/mcp/servers.json`
+- Windows: `%APPDATA%\windsurf\mcp\servers.json`
+- Linux: `~/.config/windsurf/mcp/servers.json`
+
+Add the configuration above to this file.
+
+##### OpenAI Desktop
+
+**Note**: As of writing, OpenAI Desktop MCP support is in development. Check the official documentation for the latest configuration method.
+
+##### Verifying Installation
+
+After adding the configuration:
+
+1. Restart your MCP client
+2. Look for "agent-tools" in the available tools/extensions
+3. Try using a tool like `parse_file` to verify it's working
+4. Check logs in the `logs/` directory if you encounter issues
 
 #### Available MCP Tools
 

@@ -11,6 +11,10 @@ import tree_sitter
 from agent_tools.parsers.base import BaseParser, ParseResult
 from agent_tools.parsers.languages import get_language_config, get_supported_languages
 from agent_tools.utils import safe_read_file, detect_language_from_file
+from agent_tools.logging import get_logger
+
+# Set up logger for this module
+logger = get_logger("parsers.tree_sitter")
 
 
 class TreeSitterParser(BaseParser):
@@ -39,10 +43,13 @@ class TreeSitterParser(BaseParser):
     
     async def parse(self, content: str, language: str) -> ParseResult:
         """Parse source code and return AST."""
+        logger.debug(f"Starting parse for language={language}, content_length={len(content)}")
+        
         try:
             # Get language configuration
             config = get_language_config(language)
             if not config:
+                logger.warning(f"Language {language} not supported")
                 return ParseResult(
                     language=language,
                     ast_text="",
@@ -51,9 +58,12 @@ class TreeSitterParser(BaseParser):
                 )
             
             # Get or install language
+            logger.debug(f"Getting or installing language grammar for {language}")
             try:
                 lang = await self._get_or_install_language(language)
+                logger.debug(f"Successfully loaded language grammar for {language}")
             except Exception as e:
+                logger.error(f"Failed to load language grammar for {language}: {e}")
                 return ParseResult(
                     language=language,
                     ast_text="",
@@ -63,19 +73,26 @@ class TreeSitterParser(BaseParser):
             
             # Get or create parser
             if language not in self.parsers:
+                logger.debug(f"Creating new parser for {language}")
                 parser = tree_sitter.Parser(lang)
                 self.parsers[language] = parser
             else:
+                logger.debug(f"Reusing existing parser for {language}")
                 parser = self.parsers[language]
             
             # Parse the code
+            logger.debug("Parsing code with tree-sitter")
             tree = parser.parse(bytes(content, "utf8"))
+            logger.debug(f"Parse complete, root node type: {tree.root_node.type}")
             
             # Format AST
+            logger.debug("Formatting AST")
             ast_text = self._format_ast(tree.root_node, content, config)
+            logger.debug(f"AST formatted, length: {len(ast_text)}")
             
             # Count nodes
             node_count = self._count_nodes(tree.root_node)
+            logger.debug(f"Total node count: {node_count}")
             
             return ParseResult(
                 language=language,
@@ -89,6 +106,7 @@ class TreeSitterParser(BaseParser):
             )
             
         except Exception as e:
+            logger.error(f"Unexpected error during parsing: {e}", exc_info=True)
             return ParseResult(
                 language=language,
                 ast_text="",
@@ -181,6 +199,9 @@ class TreeSitterParser(BaseParser):
         """Recursively format AST node."""
         # Format current node
         indent_str = "  " * indent
+        
+        if logger.isEnabledFor(logger.DEBUG) and indent == 0:
+            logger.debug(f"Formatting root AST node type: {node.type}")
         
         # Always show the node type
         if node.child_count == 0:
