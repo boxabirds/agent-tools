@@ -34,7 +34,7 @@ uv sync --extra dev
 uv sync --extra cpp
 ```
 
-### Using pip
+### Using pip (Not Recommended)
 
 ```bash
 # Install from source
@@ -42,9 +42,11 @@ git clone https://github.com/yourusername/agent-tools.git
 cd agent-tools
 pip install -e .
 
-# Install with development dependencies
-pip install -e ".[dev]"
+# You'll also need to manually install language packages:
+pip install tree-sitter-python tree-sitter-javascript tree-sitter-typescript tree-sitter-go
 ```
+
+**Note:** We recommend using `uv` for better dependency management and to ensure all packages work correctly.
 
 ## Quick Start
 
@@ -70,26 +72,39 @@ asyncio.run(main())
 
 ### CLI Usage
 
-```bash
-# Using uv
-uv run agent-tools parse example.py
-uv run agent-tools languages
-uv run agent-tools serve
+**Always use `uv run` to ensure packages are available:**
 
-# Or activate the virtual environment first
-source .venv/bin/activate
+```bash
+# Parse a file
+uv run agent-tools parse example.py
+
+# List supported languages
+uv run agent-tools languages
+
+# Start the MCP server
+uv run agent-tools serve
+```
+
+**Alternative: Activate the virtual environment first:**
+```bash
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 agent-tools parse example.py
-agent-tools languages
 agent-tools serve
 ```
 
 ### MCP Server Usage
 
-Start the server:
+**Important:** Always run with `uv run` to ensure the virtual environment is active:
+
 ```bash
-agent-tools serve
-# Or with custom host/port
-agent-tools serve --host 0.0.0.0 --port 3000
+# Start the server (CORRECT way)
+uv run agent-tools serve
+
+# With custom host/port
+uv run agent-tools serve --host 0.0.0.0 --port 3000
+
+# ⚠️ This WON'T work - packages won't be found
+# agent-tools serve  # DON'T do this
 ```
 
 The server provides a simple HTTP API:
@@ -170,7 +185,7 @@ agent_tools/
 │   ├── base.py       # Abstract base parser
 │   └── tree_sitter_parser.py
 ├── mcp/              # MCP server
-│   └── server.py     # FastMCP implementation
+│   └── server.py     # Simple HTTP server
 ├── api.py            # High-level Python API
 └── cli.py            # Command-line interface
 ```
@@ -214,6 +229,47 @@ The test suite includes:
 1. Add configuration to `agent_tools.parsers.languages`
 2. Specify grammar URL and node types
 3. Test with complex code samples
+
+## Troubleshooting
+
+### "Language package not installed" error
+
+If you get this error when running the server:
+```json
+{"error": "Language package tree-sitter-python not installed..."}
+```
+
+**Solution:** You're running the command outside the virtual environment. Use `uv run`:
+```bash
+# ❌ Wrong
+agent-tools serve
+
+# ✅ Correct  
+uv run agent-tools serve
+```
+
+### Server not starting
+
+Make sure no other process is using the port:
+```bash
+# Kill any existing agent-tools servers
+pkill -f "agent-tools serve"
+
+# Start fresh
+uv run agent-tools serve
+```
+
+### Can't find packages after installation
+
+Make sure you're using the virtual environment:
+```bash
+# Check if packages are installed
+uv pip list | grep tree-sitter
+
+# Run commands with uv
+uv run agent-tools parse myfile.py
+uv run agent-tools serve
+```
 
 ## License
 
