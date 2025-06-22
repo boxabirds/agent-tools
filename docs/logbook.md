@@ -327,3 +327,78 @@ $ curl -X POST http://localhost:8000/parse-file \
 - Must wrap the capsule with `tree_sitter.Language()` constructor
 - Parser is initialized with language: `Parser(lang)` not `Parser().language = lang`
 - Tests should verify functionality, not just consistent failure
+
+## Session 8: Pre-installing Common Languages (2025-06-22)
+
+### Changes
+1. **Moved common languages to main dependencies**:
+   - Python, JavaScript, TypeScript, Go now pre-installed
+   - C++ remains optional (via `--extra cpp`)
+   - Updated pyproject.toml dependencies
+
+2. **Updated documentation**:
+   - Emphasized using `uv run` for all commands
+   - Added troubleshooting section
+   - Better error messages when packages missing
+
+### Benefits
+- No extra installation step for common languages
+- Better user experience out of the box
+- C++ still optional for those who need it
+
+## Session 9: Re-implementing MCP Server (2025-06-22)
+
+### Background
+User clarified they still wanted an MCP-compliant server, not just HTTP. The goal was to have a proper MCP server that works with Claude Desktop, Windsurf, and Cursor.
+
+### Research Findings
+1. **MCP uses JSON-RPC 2.0** protocol
+2. **FastMCP is the official way** to build MCP servers in Python
+3. **MCP supports both stdio and HTTP transports**
+4. **For simple tools, MCP is still appropriate** - it's the standard
+
+### Implementation
+1. **Re-added FastMCP** (mcp>=1.0.0):
+   - Used `@mcp.tool()` decorators for clean tool definitions
+   - Implemented all 4 tools: parse_code, parse_file, list_languages, check_language
+   - Used FastMCP's built-in `run()` method for stdio transport
+
+2. **Kept HTTP server** as legacy option:
+   - Renamed old server.py to http_server.py
+   - MCP server is default, HTTP with --http flag
+   - Both servers available for different use cases
+
+3. **Created MCP protocol tests**:
+   - Tests proper JSON-RPC initialization sequence
+   - Tests all MCP tools via protocol
+   - 8 comprehensive tests all passing
+
+4. **Updated documentation**:
+   - Added Claude Desktop configuration example
+   - Documented all MCP tools
+   - Clear instructions for MCP vs HTTP usage
+
+### Results
+- **Fully MCP-compliant server** working with stdio transport
+- **All 8 MCP protocol tests passing**
+- **Works with Claude Desktop** and other MCP clients
+- **Clean implementation** using FastMCP decorators
+
+### Configuration Example
+```json
+{
+  "mcpServers": {
+    "agent-tools": {
+      "command": "uv",
+      "args": ["run", "agent-tools", "serve"],
+      "cwd": "/path/to/agent-tools"
+    }
+  }
+}
+```
+
+### Technical Details
+- FastMCP handles all protocol complexity
+- Tools return dictionaries that are automatically serialized
+- Supports both synchronous and async tool functions
+- Proper error handling with MCP error responses

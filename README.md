@@ -11,6 +11,7 @@ AI agent tools providing both Python package interface and MCP endpoint for vari
 - 🚀 **Async/await support** - Non-blocking operations
 - 🔌 **Extensible architecture** - Easy to add new tools and parsers
 - ✨ **Actually works!** - Real parsing, not just failing tests
+- 🤖 **MCP-compliant** - Works with Claude Desktop, Windsurf, Cursor, and other MCP clients
 
 ## Installation
 
@@ -94,49 +95,67 @@ agent-tools serve
 
 ### MCP Server Usage
 
+The agent-tools MCP server is fully compliant with the Model Context Protocol and can be used with any MCP client including Claude Desktop, Windsurf, and Cursor.
+
+#### Starting the MCP Server
+
 **Important:** Always run with `uv run` to ensure the virtual environment is active:
 
 ```bash
-# Start the server (CORRECT way)
+# Start MCP server (stdio transport - default)
 uv run agent-tools serve
 
-# With custom host/port
-uv run agent-tools serve --host 0.0.0.0 --port 3000
-
-# ⚠️ This WON'T work - packages won't be found
-# agent-tools serve  # DON'T do this
+# Start HTTP server (legacy, non-MCP)
+uv run agent-tools serve --http --host 0.0.0.0 --port 8000
 ```
 
-The server provides a simple HTTP API:
+#### Configuring for Claude Desktop
 
-**GET Endpoints:**
-- `/health` - Health check
-- `/languages` - List supported languages
-- `/info` - Parser information
+Add the following to your Claude Desktop config file:
 
-**POST Endpoints:**
-- `/parse` - Parse source code
-  ```json
-  {"content": "def hello(): pass", "language": "python"}
-  ```
-- `/parse-file` - Parse from file
-  ```json
-  {"file_path": "/path/to/file.py", "language": "python"}
-  ```
-- `/check-language` - Check language support
-  ```json
-  {"language": "python"}
-  ```
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-**Example:**
+```json
+{
+  "mcpServers": {
+    "agent-tools": {
+      "command": "uv",
+      "args": ["run", "agent-tools", "serve"],
+      "cwd": "/path/to/agent-tools"
+    }
+  }
+}
+```
+
+#### Available MCP Tools
+
+The MCP server exposes the following tools:
+
+- **parse_code** - Parse source code and return AST
+  - Inputs: `content` (string), `language` (string)
+  - Returns: AST representation with metadata
+
+- **parse_file** - Parse code from a file  
+  - Inputs: `file_path` (string), `language` (optional string)
+  - Returns: AST representation with metadata
+
+- **list_languages** - List supported programming languages
+  - Returns: List of supported language identifiers
+
+- **check_language** - Check if a language is supported
+  - Inputs: `language` (string)
+  - Returns: Support status and availability info
+
+#### Legacy HTTP API
+
+For backwards compatibility, a simple HTTP API is available with the `--http` flag:
+
 ```bash
 # Parse code
 curl -X POST http://localhost:8000/parse \
   -H "Content-Type: application/json" \
   -d '{"content": "def hello(): pass", "language": "python"}'
-
-# Check health
-curl http://localhost:8000/health
 ```
 
 ## Supported Languages

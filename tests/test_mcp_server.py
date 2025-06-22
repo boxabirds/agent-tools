@@ -1,4 +1,4 @@
-"""Integration tests for simple MCP server."""
+"""Integration tests for simple HTTP server."""
 
 import asyncio
 import json
@@ -9,7 +9,7 @@ from typing import Optional
 import httpx
 import pytest
 
-from agent_tools.mcp.server import run_server
+from agent_tools.mcp.http_server import run_server
 
 
 def _run_mcp_server(host: str, port: int):

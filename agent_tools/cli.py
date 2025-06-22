@@ -65,12 +65,21 @@ def languages():
 
 
 @cli.command()
-@click.option("--host", default="0.0.0.0", help="Host to bind to")
-@click.option("--port", default=8000, type=int, help="Port to bind to")
-def serve(host: str, port: int):
-    """Start the MCP server."""
-    from agent_tools.mcp.server import run_server
-    run_server(host, port)
+@click.option("--http", is_flag=True, help="Run HTTP server instead of MCP stdio server")
+@click.option("--host", default="0.0.0.0", help="Host to bind to (HTTP mode only)")
+@click.option("--port", default=8000, type=int, help="Port to bind to (HTTP mode only)")
+def serve(http: bool, host: str, port: int):
+    """Start the server (MCP stdio by default, HTTP with --http flag)."""
+    from agent_tools.mcp.server import run_stdio, run_http
+    
+    if http:
+        click.echo(f"Starting HTTP server on {host}:{port}")
+        run_http(host, port)
+    else:
+        # MCP stdio mode - no echo to stdout (only stderr)
+        import sys
+        sys.stderr.write("Starting MCP server (stdio transport)\n")
+        run_stdio()
 
 
 def main():
