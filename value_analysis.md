@@ -1,12 +1,17 @@
-# Agent-Tools Value Analysis
+# MCP Code Parser Value Analysis
 
 ## Executive Summary
 
-Agent-tools is **not just a trivial wrapper** around tree-sitter. While it does wrap tree-sitter's core parsing functionality, it adds significant value through:
+MCP Code Parser is an **opinionated MCP wrapper for tree-sitter** that makes code parsing accessible to AI agents. It's opinionated in that it:
 
-1. **MCP Server Integration** - The killer feature that makes tree-sitter accessible to AI agents
-2. **Intelligent AST Filtering** - Shows only semantically relevant nodes, not raw parse trees
-3. **Production-Ready Infrastructure** - Error handling, logging, async support, CLI tools
+1. **Filters ASTs aggressively** - Shows only semantically relevant nodes, hiding syntax noise
+2. **Prioritizes AI agent workflows** - Designed specifically for MCP integration
+3. **Makes architectural choices** - Async-first, structured output, language-specific configs
+
+Key value additions:
+- **MCP Server Integration** - The killer feature that makes tree-sitter accessible to AI agents
+- **Intelligent AST Filtering** - Opinionated selection of what nodes matter
+- **Production-Ready Infrastructure** - Error handling, logging, async support, CLI tools
 
 ## What Tree-Sitter Provides Out of the Box
 
@@ -36,7 +41,7 @@ def print_tree(node, indent=0):
         print_tree(child, indent + 1)
 ```
 
-## What Agent-Tools Adds
+## What MCP Code Parser Adds
 
 ### 1. MCP Server Integration (HIGH VALUE)
 - Exposes parsing capabilities via Model Context Protocol
@@ -53,7 +58,7 @@ def print_tree(node, indent=0):
 Example difference:
 ```
 Raw tree-sitter: 40+ nodes including 'def', ':', '(', ')', etc.
-Agent-tools: ~10 nodes focusing on structure
+MCP Code Parser: ~10 nodes focusing on structure
 ```
 
 ### 3. High-Level API (MEDIUM VALUE)
@@ -88,12 +93,12 @@ Each language has tuned configurations:
 
 ## Conclusion
 
-Agent-tools adds **real, meaningful value** for its target use case:
+MCP Code Parser is an **opinionated MCP wrapper for tree-sitter** that adds real value through its choices:
 
-1. **For AI Agents**: The MCP integration alone justifies the package's existence. It makes tree-sitter parsing available to AI assistants in a standardized way.
+1. **MCP-First Design**: Built specifically to expose tree-sitter parsing to AI agents via the Model Context Protocol. This alone justifies its existence.
 
-2. **For Developers**: The filtered AST output and high-level API significantly reduce the boilerplate needed to use tree-sitter effectively.
+2. **Opinionated AST Filtering**: Makes deliberate choices about what information matters for code understanding, dramatically simplifying output compared to raw tree-sitter.
 
-3. **Architecture**: The extensible design (BaseParser abstraction) allows for future parsing backends beyond tree-sitter.
+3. **Production-Ready Wrapper**: Handles the complexity of multi-language support, error handling, and async operations that would otherwise need to be reimplemented.
 
-This is a **purposeful adaptation** of tree-sitter for AI agent workflows, not just a convenience wrapper. The MCP server integration and intelligent filtering make it substantially more useful than raw tree-sitter for its intended use case.
+The "opinionated" nature is a feature, not a limitation. By making specific choices about what nodes to include and how to structure output, it provides a much better experience for AI agents than raw tree-sitter. It's a **purposeful, opinionated adaptation** that knows exactly what it wants to be: the best way to give AI agents access to code structure.
