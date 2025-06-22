@@ -315,6 +315,20 @@ curl http://localhost:8000/languages
 - OpenAPI specification: `/openapi.yaml`
 - Full documentation: See [MCP vs REST comparison](docs/mcp-vs-rest.md)
 
+## Documentation
+
+📚 **[Read the comprehensive User Guide](docs/user-guide.md)** for detailed instructions on:
+- Using the Python API with examples
+- Setting up and using the RESTful API
+- Integrating with MCP clients (Claude Desktop, Cursor, Windsurf)
+- Understanding AST output
+- Troubleshooting common issues
+
+Additional documentation:
+- [Technical Design](docs/tech-design.md) - Architecture and implementation details
+- [MCP vs REST Comparison](docs/mcp-vs-rest.md) - Choosing between protocols
+- [OpenAPI Specification](docs/openapi.yaml) - REST API reference
+
 ## Supported Languages
 
 **Pre-installed:**
