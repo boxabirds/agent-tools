@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-tools"
+version = "0.1.0"
+description = "AI agent tools with tree-sitter code parsing capabilities"
+readme = "README.md"
+authors = [
+    {name = "Julian", email = "julian@example.com"}
+]
+license = {text = "Apache-2.0"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "tree-sitter>=0.21.0",
+    "fastmcp>=0.1.0",
+    "httpx>=0.24.0",
+    "pydantic>=2.0.0",
+    "click>=8.1.0",
+    "uvicorn>=0.23.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[project.scripts]
+agent-tools = "agent_tools.cli:main"
+agent-tools-mcp = "agent_tools.mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent_tools*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W", "B", "C90", "UP", "S", "T", "A", "C4", "ICN", "PIE", "PT", "RET", "SIM", "TID", "TCH", "PGH", "PL", "TRY", "FLY", "PERF", "FURB", "LOG", "RUF"]
+ignore = ["E501", "S101", "PLR0913"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
