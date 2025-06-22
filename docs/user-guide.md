@@ -1,4 +1,4 @@
-# Agent-Tools User Guide
+# MCP Code Parser User Guide
 
 This guide walks you through using agent-tools' code parsing functionality in three different ways:
 1. [Direct Python API](#python-api-usage)

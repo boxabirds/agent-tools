@@ -7,8 +7,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Any, Dict
 from urllib.parse import urlparse, parse_qs
 
-from agenttools.api import AgentTools
-from agenttools.parsers.languages import LANGUAGE_CONFIGS
+from mcp_code_parser.api import AgentTools
+from mcp_code_parser.parsers.languages import LANGUAGE_CONFIGS
 
 # Initialize tools
 tools = AgentTools()
@@ -122,7 +122,7 @@ class MCPHandler(BaseHTTPRequestHandler):
         # Check if grammar is available
         if supported:
             import asyncio
-            from agenttools.parsers.tree_sitter import TreeSitterParser
+            from mcp_code_parser.parsers.tree_sitter import TreeSitterParser
             parser = TreeSitterParser()
             grammar_available = asyncio.run(parser.is_language_available(language))
         else:

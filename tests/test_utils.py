@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from agenttools.utils import (
+from mcp_code_parser.utils import (
     detect_language_from_file,
     get_cache_dir,
     get_grammar_cache_dir,

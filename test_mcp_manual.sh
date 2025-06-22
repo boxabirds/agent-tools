@@ -6,7 +6,7 @@
 mkfifo /tmp/mcp_in /tmp/mcp_out 2>/dev/null || true
 
 # Start the MCP server in background
-uv run agent-tools serve < /tmp/mcp_in > /tmp/mcp_out 2>&1 &
+uv run mcp-code-parser serve < /tmp/mcp_in > /tmp/mcp_out 2>&1 &
 MCP_PID=$!
 
 # Function to send request and read response

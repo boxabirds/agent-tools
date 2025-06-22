@@ -7,7 +7,7 @@ from pathlib import Path
 
 import click
 
-from agenttools import parse_file, supported_languages
+from mcp_code_parser import parse_file, supported_languages
 
 
 @click.group()
@@ -82,8 +82,8 @@ def serve(rest: bool, host: str, port: int, log_level: str, log_file: str, log_d
         os.environ["AGENT_TOOLS_LOG_FILE"] = log_file
     os.environ["AGENT_TOOLS_LOG_DIR"] = log_dir
     
-    from agenttools.mcp.server import run_stdio
-    from agenttools.rest.server import run_server as run_rest
+    from mcp_code_parser.mcp_server import run_stdio
+    from mcp_code_parser.rest.server import run_server as run_rest
     
     if rest:
         click.echo(f"Starting RESTful API server on {host}:{port}")

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from agenttools import parse_file, supported_languages
+from mcp_code_parser import parse_file, supported_languages
 
 
 @pytest.fixture
@@ -126,7 +126,7 @@ async def test_parse_small_code_snippets():
     ]
     
     for lang, code in snippets:
-        from agenttools import parse_code
+        from mcp_code_parser import parse_code
         result = await parse_code(code, lang)
         
         assert result.success is True

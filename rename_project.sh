@@ -1,20 +1,20 @@
 #!/bin/bash
 set -e
 
-# Main orchestration script for renaming project from agenttools to mcp-code-parser
+# Main orchestration script for renaming project from mcp_code_parser to mcp-code-parser
 
-echo "=== Starting project rename from agenttools to mcp-code-parser ==="
+echo "=== Starting project rename from mcp_code_parser to mcp-code-parser ==="
 echo ""
 
 # Check if we're in the right directory
-if [ ! -d "agenttools" ]; then
-    echo "Error: agenttools directory not found. Are you in the project root?"
+if [ ! -d "mcp_code_parser" ]; then
+    echo "Error: mcp_code_parser directory not found. Are you in the project root?"
     exit 1
 fi
 
 # Create backup
 echo "Creating backup..."
-BACKUP_DIR="../agent-tools-backup-$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="../mcp-code-parser-backup-$(date +%Y%m%d-%H%M%S)"
 cp -r . "$BACKUP_DIR"
 echo "✓ Backup created at: $BACKUP_DIR"
 echo ""

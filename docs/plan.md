@@ -1,4 +1,4 @@
-# Agent Tools Development Plan
+# MCP Code Parser Development Plan
 
 ## Project Overview
 AI agent tools package providing both Python package interface and MCP endpoint for various utilities, starting with tree-sitter code parsing.

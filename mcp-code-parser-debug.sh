@@ -1,8 +1,8 @@
 #!/bin/bash
-# Debug wrapper for agent-tools MCP server
+# Debug wrapper for mcp-code-parser MCP server
 
-LOG_FILE="/tmp/agent-tools-mcp.log"
-PROJECT_DIR="/Users/julian/expts/agent-tools"
+LOG_FILE="/tmp/mcp-code-parser-mcp.log"
+PROJECT_DIR="/Users/julian/expts/mcp-code-parser"
 
 echo "=== Agent Tools MCP Server Started at $(date) ===" >> "$LOG_FILE"
 echo "Working directory: $(pwd)" >> "$LOG_FILE"
@@ -37,4 +37,4 @@ fi
 echo "Using uv at: $UV_CMD" >&2
 
 # Run the actual server
-"$UV_CMD" run agent-tools serve
+"$UV_CMD" run mcp-code-parser serve

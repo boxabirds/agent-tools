@@ -1,6 +1,6 @@
 # agent-tools
 
-AI agent tools providing both Python package interface and MCP endpoint for various utilities. The initial implementation focuses on tree-sitter based code parsing with support for multiple programming languages.
+MCP client tools providing both Python package interface and MCP endpoint for various utilities. The initial implementation focuses on tree-sitter based code parsing with support for multiple programming languages.
 
 ## Why agent-tools?
 
@@ -23,7 +23,7 @@ Sending raw source code to LLMs has significant limitations:
 While tree-sitter is an excellent parsing library, agent-tools adds significant value for AI workflows:
 
 ### 1. **MCP Protocol Integration**
-The primary value is exposing tree-sitter's capabilities through the Model Context Protocol (MCP), making it accessible to AI agents like Claude Desktop, Cursor, and Windsurf. Without this, these tools cannot use tree-sitter for code analysis.
+The primary value is exposing tree-sitter's capabilities through the Model Context Protocol (MCP), making it accessible to MCP clients like Claude Desktop, Cursor, and Windsurf. Without this, these tools cannot use tree-sitter for code analysis.
 
 ### 2. **Intelligent AST Filtering**
 Raw tree-sitter output includes every syntactic element (parentheses, colons, keywords). Agent-tools filters this noise to show only semantically meaningful nodes:
@@ -32,7 +32,7 @@ Raw tree-sitter output includes every syntactic element (parentheses, colons, ke
 - Important expressions
 - Actual code snippets in leaf nodes
 
-This makes the AST actually useful for AI agents that need to understand code structure without drowning in syntax.
+This makes the AST actually useful for MCP clients that need to understand code structure without drowning in syntax.
 
 **Example: Python function parsing**
 

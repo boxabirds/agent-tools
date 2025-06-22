@@ -2,17 +2,17 @@
 
 import pytest
 
-from agenttools.parsers.base import (
+from mcp_code_parser.parsers.base import (
     LanguageNotSupportedError,
     ParseResult,
     ParserError,
 )
-from agenttools.parsers.languages import (
+from mcp_code_parser.parsers.languages import (
     get_language_by_extension,
     get_language_config,
     get_supported_languages,
 )
-from agenttools.utils import detect_language_from_file, hash_content
+from mcp_code_parser.utils import detect_language_from_file, hash_content
 
 
 def test_parse_result():

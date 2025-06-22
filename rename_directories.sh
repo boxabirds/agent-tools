@@ -4,28 +4,28 @@ set -e
 echo "Renaming directories..."
 
 # Rename main package directory
-if [ -d "agenttools" ]; then
-    git mv agenttools mcp_code_parser
-    echo "✓ Renamed agenttools/ to mcp_code_parser/"
+if [ -d "mcp_code_parser" ]; then
+    git mv mcp_code_parser mcp_code_parser
+    echo "✓ Renamed mcp_code_parser/ to mcp_code_parser/"
 else
-    echo "⚠ agenttools directory not found, may already be renamed"
+    echo "⚠ mcp_code_parser directory not found, may already be renamed"
 fi
 
 # Remove old egg-info if exists
-if [ -d "agent_tools.egg-info" ]; then
-    rm -rf agent_tools.egg-info
-    echo "✓ Removed old agent_tools.egg-info"
+if [ -d "mcp_code_parser.egg-info" ]; then
+    rm -rf mcp_code_parser.egg-info
+    echo "✓ Removed old mcp_code_parser.egg-info"
 fi
 
 # Rename shell scripts
-if [ -f "agent-tools-mcp.sh" ]; then
-    git mv agent-tools-mcp.sh mcp-code-parser.sh
-    echo "✓ Renamed agent-tools-mcp.sh to mcp-code-parser.sh"
+if [ -f "mcp-code-parser-mcp.sh" ]; then
+    git mv mcp-code-parser-mcp.sh mcp-code-parser.sh
+    echo "✓ Renamed mcp-code-parser-mcp.sh to mcp-code-parser.sh"
 fi
 
-if [ -f "agent-tools-debug.sh" ]; then
-    git mv agent-tools-debug.sh mcp-code-parser-debug.sh
-    echo "✓ Renamed agent-tools-debug.sh to mcp-code-parser-debug.sh"
+if [ -f "mcp-code-parser-debug.sh" ]; then
+    git mv mcp-code-parser-debug.sh mcp-code-parser-debug.sh
+    echo "✓ Renamed mcp-code-parser-debug.sh to mcp-code-parser-debug.sh"
 fi
 
 echo "✓ Directory renaming complete"

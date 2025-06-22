@@ -2,8 +2,8 @@
 
 from typing import Dict, List, Optional, Type
 
-from agenttools.parsers.base import BaseParser, ParseResult
-from agenttools.parsers.tree_sitter import TreeSitterParser
+from mcp_code_parser.parsers.base import BaseParser, ParseResult
+from mcp_code_parser.parsers.tree_sitter import TreeSitterParser
 
 
 class AgentTools:

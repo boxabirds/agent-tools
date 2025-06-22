@@ -7,9 +7,9 @@ echo "Streamlining MCP structure..."
 if [ -d "mcp_code_parser/mcp" ]; then
     MCP_DIR="mcp_code_parser/mcp"
     PARENT_DIR="mcp_code_parser"
-elif [ -d "agenttools/mcp" ]; then
-    MCP_DIR="agenttools/mcp"
-    PARENT_DIR="agenttools"
+elif [ -d "mcp_code_parser/mcp" ]; then
+    MCP_DIR="mcp_code_parser/mcp"
+    PARENT_DIR="mcp_code_parser"
 else
     echo "  ⚠ No MCP directory found, skipping streamlining"
     exit 0

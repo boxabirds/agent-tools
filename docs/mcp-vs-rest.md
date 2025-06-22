@@ -5,7 +5,7 @@ This document explains the differences between the Model Context Protocol (MCP) 
 ## Overview
 
 Agent-tools provides two different API interfaces:
-- **MCP (Model Context Protocol)**: For AI agents and tools that support MCP
+- **MCP (Model Context Protocol)**: For MCP clients and tools that support MCP
 - **RESTful API**: For traditional HTTP-based integrations
 
 Both interfaces expose the same core functionality but differ significantly in their approach and capabilities.
@@ -113,7 +113,7 @@ Content-Type: application/vnd.api+json
 
 ### Use MCP When:
 
-- Building AI agents or assistants
+- Building MCP clients or assistants
 - Using Claude Desktop, Cursor, or Windsurf
 - Need dynamic tool discovery
 - Want bidirectional communication

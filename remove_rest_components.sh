@@ -4,13 +4,13 @@ set -e
 echo "Removing REST API components..."
 
 # Remove REST directory
-if [ -d "mcp_code_parser/rest" ] || [ -d "agenttools/rest" ]; then
+if [ -d "mcp_code_parser/rest" ] || [ -d "mcp_code_parser/rest" ]; then
     if [ -d "mcp_code_parser/rest" ]; then
         rm -rf mcp_code_parser/rest
         echo "  ✓ Removed mcp_code_parser/rest/"
-    elif [ -d "agenttools/rest" ]; then
-        rm -rf agenttools/rest
-        echo "  ✓ Removed agenttools/rest/"
+    elif [ -d "mcp_code_parser/rest" ]; then
+        rm -rf mcp_code_parser/rest
+        echo "  ✓ Removed mcp_code_parser/rest/"
     fi
 fi
 

@@ -139,7 +139,7 @@ This filtering is particularly valuable for AI agents that need to:
 print("\n=== ACTUAL AGENT-TOOLS USAGE ===")
 
 async def demo():
-    from agenttools import parse_code
+    from mcp_code_parser import parse_code
     
     result = await parse_code(sample_code, "python")
     

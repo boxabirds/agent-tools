@@ -1,4 +1,4 @@
-"""Logging configuration for agent-tools."""
+"""Logging configuration for mcp-code-parser."""
 
 import logging
 import sys
@@ -26,7 +26,7 @@ def setup_logging(
         Configured logger instance
     """
     # Create logger
-    logger = logging.getLogger("agent_tools")
+    logger = logging.getLogger("mcp_code_parser")
     logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
     
     # Remove existing handlers
@@ -54,7 +54,7 @@ def setup_logging(
             log_dir_path = Path(log_dir) if log_dir else Path("logs")
             log_dir_path.mkdir(parents=True, exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            file_path = log_dir_path / f"agent_tools_{timestamp}.log"
+            file_path = log_dir_path / f"mcp_code_parser_{timestamp}.log"
         
         file_handler = logging.FileHandler(file_path)
         file_handler.setFormatter(formatter)
@@ -70,4 +70,4 @@ def setup_logging(
 
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance for a specific module."""
-    return logging.getLogger(f"agent_tools.{name}")
+    return logging.getLogger(f"mcp_code_parser.{name}")

@@ -8,11 +8,11 @@ echo ""
 # It assumes you have a backup directory created by rename_project.sh
 
 # Find the most recent backup
-BACKUP_DIR=$(ls -dt ../agent-tools-backup-* 2>/dev/null | head -1)
+BACKUP_DIR=$(ls -dt ../mcp-code-parser-backup-* 2>/dev/null | head -1)
 
 if [ -z "$BACKUP_DIR" ]; then
     echo "Error: No backup directory found!"
-    echo "Expected backup directories in parent directory named 'agent-tools-backup-*'"
+    echo "Expected backup directories in parent directory named 'mcp-code-parser-backup-*'"
     exit 1
 fi
 
@@ -30,13 +30,13 @@ fi
 FAILED_DIR="../mcp-code-parser-failed-$(date +%Y%m%d-%H%M%S)"
 echo "Saving current state to: $FAILED_DIR"
 cd ..
-mv agent-tools "$FAILED_DIR" 2>/dev/null || mv mcp-code-parser "$FAILED_DIR"
+mv mcp-code-parser "$FAILED_DIR" 2>/dev/null || mv mcp-code-parser "$FAILED_DIR"
 
 # Restore from backup
 echo "Restoring from backup..."
-cp -r "$BACKUP_DIR" agent-tools
+cp -r "$BACKUP_DIR" mcp-code-parser
 
-cd agent-tools
+cd mcp-code-parser
 echo ""
 echo "✓ Rollback complete!"
 echo ""

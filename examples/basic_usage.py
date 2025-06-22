@@ -1,7 +1,7 @@
 """Basic usage examples for agent-tools."""
 
 import asyncio
-from agenttools import parse_code, parse_file, supported_languages
+from mcp_code_parser import parse_code, parse_file, supported_languages
 
 
 async def example_parse_code():
@@ -91,7 +91,7 @@ async def example_with_api_class():
     """Example: Using the AgentTools class directly."""
     print("\n=== AgentTools Class Example ===")
     
-    from agenttools import AgentTools
+    from mcp_code_parser import AgentTools
     
     tools = AgentTools()
     

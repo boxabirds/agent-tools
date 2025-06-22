@@ -14,11 +14,11 @@ update_file() {
     fi
     
     # Create temp file with updated imports
-    sed 's/from agenttools/from mcp_code_parser/g' "$file" | \
-    sed 's/import agenttools/import mcp_code_parser/g' | \
-    sed 's/agenttools\./mcp_code_parser./g' | \
-    sed 's/"agenttools"/"mcp_code_parser"/g' | \
-    sed "s/'agenttools'/'mcp_code_parser'/g" > "$temp_file"
+    sed 's/from mcp_code_parser/from mcp_code_parser/g' "$file" | \
+    sed 's/import mcp_code_parser/import mcp_code_parser/g' | \
+    sed 's/mcp_code_parser\./mcp_code_parser./g' | \
+    sed 's/"mcp_code_parser"/"mcp_code_parser"/g' | \
+    sed "s/'mcp_code_parser'/'mcp_code_parser'/g" > "$temp_file"
     
     # Only update if changes were made
     if ! cmp -s "$file" "$temp_file"; then
@@ -30,7 +30,7 @@ update_file() {
 }
 
 # Find all Python files and update them
-find . -type f -name "*.py" -not -path "./venv/*" -not -path "./.git/*" -not -path "./agent_tools.egg-info/*" -not -path "./*.egg-info/*" | while read -r file; do
+find . -type f -name "*.py" -not -path "./venv/*" -not -path "./.git/*" -not -path "./mcp_code_parser.egg-info/*" -not -path "./*.egg-info/*" | while read -r file; do
     update_file "$file"
 done
 
@@ -43,9 +43,9 @@ echo "Updating shell scripts..."
 for script in *.sh test_mcp_manual.sh; do
     if [ -f "$script" ]; then
         temp_file="${script}.tmp"
-        sed 's/agenttools/mcp_code_parser/g' "$script" | \
-        sed 's/agent-tools/mcp-code-parser/g' | \
-        sed 's/agent_tools/mcp_code_parser/g' > "$temp_file"
+        sed 's/mcp_code_parser/mcp_code_parser/g' "$script" | \
+        sed 's/mcp-code-parser/mcp-code-parser/g' | \
+        sed 's/mcp_code_parser/mcp_code_parser/g' > "$temp_file"
         
         if ! cmp -s "$script" "$temp_file"; then
             mv "$temp_file" "$script"

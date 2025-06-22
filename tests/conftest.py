@@ -7,7 +7,7 @@ from typing import Generator
 
 import pytest
 
-from agenttools import AgentTools
+from mcp_code_parser import AgentTools
 
 
 @pytest.fixture

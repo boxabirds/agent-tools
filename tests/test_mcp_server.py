@@ -9,7 +9,7 @@ from typing import Optional
 import httpx
 import pytest
 
-from agenttools.mcp.http_server import run_server
+from mcp_code_parser.mcp_http_server import run_server
 
 
 def _run_mcp_server(host: str, port: int):
