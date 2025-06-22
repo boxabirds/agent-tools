@@ -1,0 +1,476 @@
+openapi: 3.0.3
+info:
+  title: Agent Tools RESTful API
+  description: |
+    RESTful API for agent-tools code parsing service.
+    
+    This API provides code parsing capabilities using tree-sitter, with support
+    for multiple programming languages. The API follows JSON:API specification
+    for request and response formats.
+  version: 1.0.0
+  contact:
+    name: Agent Tools Support
+    url: https://github.com/yourusername/agent-tools
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://localhost:8000
+    description: Default development server
+
+paths:
+  /:
+    get:
+      summary: Get API information
+      description: Returns information about the API and available endpoints
+      operationId: getApiRoot
+      responses:
+        '200':
+          description: API information
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ApiInfo'
+
+  /languages:
+    get:
+      summary: List supported languages
+      description: Returns a list of all programming languages supported by the parser
+      operationId: listLanguages
+      responses:
+        '200':
+          description: List of languages
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/LanguageList'
+
+  /languages/{languageId}:
+    get:
+      summary: Get language details
+      description: Returns detailed information about a specific programming language
+      operationId: getLanguage
+      parameters:
+        - name: languageId
+          in: path
+          required: true
+          description: Language identifier (e.g., python, javascript)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Language details
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Language'
+        '404':
+          description: Language not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /parsers:
+    get:
+      summary: List available parsers
+      description: Returns a list of available code parsers
+      operationId: listParsers
+      responses:
+        '200':
+          description: List of parsers
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ParserList'
+
+  /analyses:
+    post:
+      summary: Create a new code analysis
+      description: Parses source code and returns an AST representation
+      operationId: createAnalysis
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/AnalysisRequest'
+      responses:
+        '201':
+          description: Analysis created successfully
+          headers:
+            Location:
+              description: URI of the created analysis
+              schema:
+                type: string
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '400':
+          description: Invalid request
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analyses/{analysisId}:
+    get:
+      summary: Get analysis result
+      description: Retrieves a previously created analysis by ID
+      operationId: getAnalysis
+      parameters:
+        - name: analysisId
+          in: path
+          required: true
+          description: Analysis ID (UUID)
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Analysis result
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '404':
+          description: Analysis not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    ApiInfo:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - id
+            - attributes
+            - links
+          properties:
+            type:
+              type: string
+              example: api
+            id:
+              type: string
+              example: agent-tools-rest-api
+            attributes:
+              type: object
+              properties:
+                version:
+                  type: string
+                  example: 1.0.0
+                description:
+                  type: string
+            links:
+              type: object
+              properties:
+                self:
+                  type: string
+                  example: /
+                analyses:
+                  type: string
+                  example: /analyses
+                languages:
+                  type: string
+                  example: /languages
+                parsers:
+                  type: string
+                  example: /parsers
+
+    Language:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - id
+            - attributes
+            - links
+          properties:
+            type:
+              type: string
+              example: language
+            id:
+              type: string
+              example: python
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Python
+                file_extensions:
+                  type: array
+                  items:
+                    type: string
+                  example: [".py", ".pyw"]
+                available:
+                  type: boolean
+                  example: true
+                package_name:
+                  type: string
+                  example: tree-sitter-python
+                node_types:
+                  type: object
+                  properties:
+                    included:
+                      type: array
+                      items:
+                        type: string
+                    excluded:
+                      type: array
+                      items:
+                        type: string
+            links:
+              type: object
+              properties:
+                self:
+                  type: string
+                  example: /languages/python
+
+    LanguageList:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - type
+              - id
+              - attributes
+              - links
+            properties:
+              type:
+                type: string
+                example: language
+              id:
+                type: string
+              attributes:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  file_extensions:
+                    type: array
+                    items:
+                      type: string
+                  available:
+                    type: boolean
+              links:
+                type: object
+                properties:
+                  self:
+                    type: string
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+
+    ParserList:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - type
+              - id
+              - attributes
+              - links
+            properties:
+              type:
+                type: string
+                example: parser
+              id:
+                type: string
+                example: tree-sitter
+              attributes:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Tree-sitter
+                  version:
+                    type: string
+                    example: 0.20.0+
+                  description:
+                    type: string
+                  supported_languages:
+                    type: array
+                    items:
+                      type: string
+              links:
+                type: object
+                properties:
+                  self:
+                    type: string
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+
+    AnalysisRequest:
+      type: object
+      required:
+        - source
+      properties:
+        source:
+          type: object
+          oneOf:
+            - required: [content, language]
+              properties:
+                content:
+                  type: string
+                  description: Source code to parse
+                  example: "def hello():\n    return 'world'"
+                language:
+                  type: string
+                  description: Programming language
+                  example: python
+            - required: [file_path]
+              properties:
+                file_path:
+                  type: string
+                  description: Path to file to parse
+                  example: /path/to/file.py
+                language:
+                  type: string
+                  description: Optional language override
+                  example: python
+
+    Analysis:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - id
+            - attributes
+            - relationships
+            - links
+          properties:
+            type:
+              type: string
+              example: analysis
+            id:
+              type: string
+              format: uuid
+              example: 550e8400-e29b-41d4-a716-446655440000
+            attributes:
+              type: object
+              properties:
+                language:
+                  type: string
+                  example: python
+                parser:
+                  type: string
+                  example: tree-sitter
+                success:
+                  type: boolean
+                  example: true
+                ast:
+                  type: string
+                  nullable: true
+                  description: AST representation if successful
+                  example: "module\n  function_definition\n    identifier: 'hello'"
+                error:
+                  type: string
+                  nullable: true
+                  description: Error message if parsing failed
+                metadata:
+                  type: object
+                  properties:
+                    node_count:
+                      type: integer
+                      example: 42
+                    parser:
+                      type: string
+                      example: tree-sitter
+                    tree_sitter_version:
+                      type: string
+                      example: "14"
+                created_at:
+                  type: string
+                  format: date-time
+                  example: 2024-01-01T12:00:00Z
+            relationships:
+              type: object
+              properties:
+                language:
+                  type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          example: language
+                        id:
+                          type: string
+                          example: python
+                parser:
+                  type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          example: parser
+                        id:
+                          type: string
+                          example: tree-sitter
+            links:
+              type: object
+              properties:
+                self:
+                  type: string
+                  example: /analyses/550e8400-e29b-41d4-a716-446655440000
+
+    Error:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: string
+                example: "404"
+              title:
+                type: string
+                example: Not Found
+              detail:
+                type: string
+                example: Language nonexistent not found

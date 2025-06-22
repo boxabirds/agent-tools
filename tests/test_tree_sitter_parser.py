@@ -30,7 +30,9 @@ async def test_parse_simple_python(parser):
     
     # Should fail gracefully when grammar not available
     assert not result.success
-    assert "tree-sitter CLI not found" in result.error or "Failed to clone repository" in result.error
+    assert ("Language package tree-sitter-python not installed" in result.error or 
+            "tree-sitter CLI not found" in result.error or 
+            "Failed to clone repository" in result.error)
     
 
 @pytest.mark.asyncio

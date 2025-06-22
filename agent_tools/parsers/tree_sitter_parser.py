@@ -2,6 +2,7 @@
 
 import asyncio
 import importlib
+import logging
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -16,6 +17,16 @@ from agent_tools.logging import get_logger
 # Set up logger for this module
 logger = get_logger("parsers.tree_sitter")
 
+# Pre-load language modules to ensure they're available in subprocesses
+_preloaded_modules = {}
+for lang in ["python", "javascript", "typescript", "go"]:
+    try:
+        module_name = f"tree_sitter_{lang}"
+        _preloaded_modules[lang] = importlib.import_module(module_name)
+        logger.debug(f"Pre-loaded {module_name}")
+    except ImportError:
+        logger.debug(f"Could not pre-load {module_name}")
+
 
 class TreeSitterParser(BaseParser):
     """Parser implementation using tree-sitter."""
@@ -24,6 +35,15 @@ class TreeSitterParser(BaseParser):
         """Initialize the tree-sitter parser."""
         self.parsers: Dict[str, tree_sitter.Parser] = {}
         self._language_cache: Dict[str, tree_sitter.Language] = {}
+    
+    async def __aenter__(self):
+        """Enter async context."""
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Exit async context."""
+        # Cleanup if needed
+        pass
     
     def name(self) -> str:
         """Get parser name."""
@@ -163,14 +183,19 @@ class TreeSitterParser(BaseParser):
         # Try to import the language module
         module_name = package_name.replace("-", "_")
         
-        try:
-            # Try to import existing module
-            module = importlib.import_module(module_name)
-        except ImportError as e:
-            raise RuntimeError(
-                f"Language package {package_name} not installed. "
-                f"Install it with: uv add {package_name} or uv sync --extra languages"
-            )
+        # First check if we have it pre-loaded
+        if language in _preloaded_modules:
+            module = _preloaded_modules[language]
+            logger.debug(f"Using pre-loaded module for {language}")
+        else:
+            try:
+                # Try to import existing module
+                module = importlib.import_module(module_name)
+            except ImportError as e:
+                raise RuntimeError(
+                    f"Language package {package_name} not installed. "
+                    f"Install it with: uv add {package_name} or uv sync --extra languages"
+                )
         
         # Get the language object
         # Most tree-sitter language packages expose a language() function that returns a capsule
@@ -200,7 +225,7 @@ class TreeSitterParser(BaseParser):
         # Format current node
         indent_str = "  " * indent
         
-        if logger.isEnabledFor(logger.DEBUG) and indent == 0:
+        if logger.isEnabledFor(logging.DEBUG) and indent == 0:
             logger.debug(f"Formatting root AST node type: {node.type}")
         
         # Always show the node type

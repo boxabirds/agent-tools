@@ -187,8 +187,8 @@ uv run agent-tools serve --log-level DEBUG
 # Start with custom log file
 uv run agent-tools serve --log-file /tmp/agent-tools.log
 
-# Start HTTP server (legacy, non-MCP)
-uv run agent-tools serve --http --host 0.0.0.0 --port 8000
+# Start RESTful API server
+uv run agent-tools serve --rest --host 0.0.0.0 --port 8000
 ```
 
 #### Installing in MCP Clients
@@ -285,16 +285,35 @@ The MCP server exposes the following tools:
   - Inputs: `language` (string)
   - Returns: Support status and availability info
 
-#### Legacy HTTP API
+#### RESTful API
 
-For backwards compatibility, a simple HTTP API is available with the `--http` flag:
+For direct HTTP integration, a RESTful API is available with the `--rest` flag. The API follows REST principles and JSON:API specification.
 
+**Create an analysis:**
 ```bash
-# Parse code
-curl -X POST http://localhost:8000/parse \
-  -H "Content-Type: application/json" \
-  -d '{"content": "def hello(): pass", "language": "python"}'
+curl -X POST http://localhost:8000/analyses \
+  -H "Content-Type: application/vnd.api+json" \
+  -d '{
+    "source": {
+      "content": "def hello(): return \"world\"",
+      "language": "python"
+    }
+  }'
 ```
+
+**Retrieve an analysis:**
+```bash
+curl http://localhost:8000/analyses/{id}
+```
+
+**List languages:**
+```bash
+curl http://localhost:8000/languages
+```
+
+**API Documentation:**
+- OpenAPI specification: `/openapi.yaml`
+- Full documentation: See [MCP vs REST comparison](docs/mcp-vs-rest.md)
 
 ## Supported Languages
 
@@ -341,8 +360,9 @@ agent_tools/
 ├── parsers/          # Parser implementations
 │   ├── base.py       # Abstract base parser
 │   └── tree_sitter_parser.py
-├── mcp/              # MCP server
-│   └── server.py     # Simple HTTP server
+├── mcp/              # Server implementations
+│   ├── server.py     # MCP server
+│   └── rest_server.py # RESTful API server
 ├── api.py            # High-level Python API
 └── cli.py            # Command-line interface
 ```
@@ -362,8 +382,11 @@ pytest
 pytest --cov=agent_tools
 pytest tests/test_integration.py
 
-# Run only MCP server tests
-uv run pytest tests/test_mcp_server.py
+# Run only MCP protocol tests
+uv run pytest tests/test_mcp_protocol.py
+
+# Run only REST API tests
+uv run pytest tests/test_rest_server.py
 
 # Run only unit tests
 uv run pytest tests/test_parser.py

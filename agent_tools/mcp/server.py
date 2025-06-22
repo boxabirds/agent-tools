@@ -144,7 +144,3 @@ def run_stdio():
     mcp.run(transport="stdio")
 
 
-def run_http(host: str = "0.0.0.0", port: int = 8000):
-    """Run simple HTTP server (non-MCP) for backwards compatibility."""
-    from .http_server import run_server
-    run_server(host, port)
