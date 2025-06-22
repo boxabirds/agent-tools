@@ -211,3 +211,6 @@ Thumbs.db
 # Project specific
 .cache/
 logs/
+
+# uv
+uv.lock

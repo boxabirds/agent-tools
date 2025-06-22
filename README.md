@@ -13,6 +13,20 @@ AI agent tools providing both Python package interface and MCP endpoint for vari
 
 ## Installation
 
+### Using uv (Recommended)
+
+```bash
+# Install uv if you haven't already
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and install
+git clone https://github.com/yourusername/agent-tools.git
+cd agent-tools
+uv sync --extra dev  # This creates a virtual environment and installs all dependencies
+```
+
+### Using pip
+
 ```bash
 # Install from source
 git clone https://github.com/yourusername/agent-tools.git
@@ -48,13 +62,15 @@ asyncio.run(main())
 ### CLI Usage
 
 ```bash
-# Parse a file
+# Using uv
+uv run agent-tools parse example.py
+uv run agent-tools languages
+uv run agent-tools serve
+
+# Or activate the virtual environment first
+source .venv/bin/activate
 agent-tools parse example.py
-
-# List supported languages
 agent-tools languages
-
-# Start MCP server
 agent-tools serve
 ```
 
@@ -63,13 +79,41 @@ agent-tools serve
 Start the server:
 ```bash
 agent-tools serve
+# Or with custom host/port
+agent-tools serve --host 0.0.0.0 --port 3000
 ```
 
-Then use the MCP tools:
-- `parse_code` - Parse source code content
-- `parse_file` - Parse source code from file
-- `list_supported_languages` - Get supported languages
-- `check_language_available` - Check if language grammar is available
+The server provides a simple HTTP API:
+
+**GET Endpoints:**
+- `/health` - Health check
+- `/languages` - List supported languages
+- `/info` - Parser information
+
+**POST Endpoints:**
+- `/parse` - Parse source code
+  ```json
+  {"content": "def hello(): pass", "language": "python"}
+  ```
+- `/parse-file` - Parse from file
+  ```json
+  {"file_path": "/path/to/file.py", "language": "python"}
+  ```
+- `/check-language` - Check language support
+  ```json
+  {"language": "python"}
+  ```
+
+**Example:**
+```bash
+# Parse code
+curl -X POST http://localhost:8000/parse \
+  -H "Content-Type: application/json" \
+  -d '{"content": "def hello(): pass", "language": "python"}'
+
+# Check health
+curl http://localhost:8000/health
+```
 
 ## Supported Languages
 
@@ -124,20 +168,21 @@ agent_tools/
 ### Running Tests
 
 ```bash
-# Run all tests
+# Using uv
+uv run pytest
+uv run pytest --cov=agent_tools
+uv run pytest tests/test_integration.py
+
+# Or with activated virtual environment
 pytest
-
-# Run with coverage
 pytest --cov=agent_tools
-
-# Run specific test file
 pytest tests/test_integration.py
 
 # Run only MCP server tests
-pytest tests/test_mcp_server.py
+uv run pytest tests/test_mcp_server.py
 
 # Run only unit tests
-pytest tests/test_parser.py
+uv run pytest tests/test_parser.py
 ```
 
 The test suite includes:

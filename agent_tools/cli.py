@@ -65,11 +65,12 @@ def languages():
 
 
 @cli.command()
-def serve():
+@click.option("--host", default="0.0.0.0", help="Host to bind to")
+@click.option("--port", default=8000, type=int, help="Port to bind to")
+def serve(host: str, port: int):
     """Start the MCP server."""
-    from agent_tools.mcp.server import main as serve_mcp
-    click.echo("Starting MCP server on http://localhost:8000")
-    serve_mcp()
+    from agent_tools.mcp.server import run_server
+    run_server(host, port)
 
 
 def main():

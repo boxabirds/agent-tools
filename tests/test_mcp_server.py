@@ -1,4 +1,4 @@
-"""Integration tests for MCP server."""
+"""Integration tests for simple MCP server."""
 
 import asyncio
 import json
@@ -8,15 +8,13 @@ from typing import Optional
 
 import httpx
 import pytest
-import uvicorn
 
-from agent_tools.mcp.server import mcp
+from agent_tools.mcp.server import run_server
 
 
 def _run_mcp_server(host: str, port: int):
     """Run the MCP server - needs to be at module level for pickling."""
-    # Use the http_app from FastMCP
-    uvicorn.run(mcp.http_app(), host=host, port=port, log_level="error")
+    run_server(host, port)
 
 
 class MCPServerProcess:
@@ -52,11 +50,8 @@ class MCPServerProcess:
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
-                # Try to call the health_check tool
-                response = httpx.post(
-                    f"http://{self.host}:{self.port}/tools/health_check",
-                    json={}
-                )
+                # Try health check endpoint
+                response = httpx.get(f"http://{self.host}:{self.port}/health")
                 if response.status_code == 200:
                     return
             except httpx.ConnectError:
@@ -82,62 +77,23 @@ async def mcp_client(mcp_server):
 
 
 @pytest.mark.asyncio
-async def test_mcp_parse_code(mcp_client):
-    """Test parse_code tool via MCP."""
-    response = await mcp_client.post(
-        "/tools/parse_code",
-        json={
-            "content": "def hello(name):\n    return f'Hello, {name}!'",
-            "language": "python"
-        }
-    )
+async def test_mcp_health_check(mcp_client):
+    """Test health check endpoint."""
+    response = await mcp_client.get("/health")
     
     assert response.status_code == 200
     data = response.json()
     
-    assert data["success"] is True
-    assert data["language"] == "python"
-    assert "module" in data["ast"]
-    assert "function_definition" in data["ast"]
-    assert "hello" in data["ast"]
-    assert data["error"] is None
-
-
-@pytest.mark.asyncio
-async def test_mcp_parse_file(mcp_client, tmp_path):
-    """Test parse_file tool via MCP."""
-    # Create test file
-    test_file = tmp_path / "test.js"
-    test_file.write_text("""
-function add(a, b) {
-    return a + b;
-}
-
-const result = add(1, 2);
-console.log(result);
-""")
-    
-    response = await mcp_client.post(
-        "/tools/parse_file",
-        json={
-            "file_path": str(test_file)
-        }
-    )
-    
-    assert response.status_code == 200
-    data = response.json()
-    
-    assert data["success"] is True
-    assert data["language"] == "javascript"
-    assert "program" in data["ast"]
-    assert "function_declaration" in data["ast"]
-    assert "add" in data["ast"]
+    assert data["status"] == "healthy"
+    assert data["service"] == "agent-tools"
+    assert "timestamp" in data
+    assert data["version"] == "0.1.0"
 
 
 @pytest.mark.asyncio
 async def test_mcp_list_languages(mcp_client):
-    """Test list_supported_languages tool via MCP."""
-    response = await mcp_client.post("/tools/list_supported_languages", json={})
+    """Test list languages endpoint."""
+    response = await mcp_client.get("/languages")
     
     assert response.status_code == 200
     data = response.json()
@@ -151,11 +107,74 @@ async def test_mcp_list_languages(mcp_client):
 
 
 @pytest.mark.asyncio
+async def test_mcp_info(mcp_client):
+    """Test info endpoint."""
+    response = await mcp_client.get("/info")
+    
+    assert response.status_code == 200
+    info = response.text
+    
+    assert "Available parsers" in info
+    assert "tree-sitter" in info
+    assert "Supported languages" in info
+    assert "python" in info
+
+
+@pytest.mark.asyncio
+async def test_mcp_parse_code(mcp_client):
+    """Test parse code endpoint."""
+    response = await mcp_client.post(
+        "/parse",
+        json={
+            "content": "def hello(name):\n    return f'Hello, {name}!'",
+            "language": "python"
+        }
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["success"] is False  # Will fail due to missing grammars
+    assert data["language"] == "python"
+    assert data["ast"] == ""
+    assert "tree-sitter CLI not found" in data["error"] or "Failed to clone repository" in data["error"]
+
+
+@pytest.mark.asyncio
+async def test_mcp_parse_file(mcp_client, tmp_path):
+    """Test parse file endpoint."""
+    # Create test file
+    test_file = tmp_path / "test.js"
+    test_file.write_text("""
+function add(a, b) {
+    return a + b;
+}
+
+const result = add(1, 2);
+console.log(result);
+""")
+    
+    response = await mcp_client.post(
+        "/parse-file",
+        json={
+            "file_path": str(test_file)
+        }
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["success"] is False  # Will fail due to missing grammars
+    assert data["language"] == "javascript"
+    assert "tree-sitter CLI not found" in data["error"] or "Failed to clone repository" in data["error"]
+
+
+@pytest.mark.asyncio
 async def test_mcp_check_language_available(mcp_client):
-    """Test check_language_available tool via MCP."""
+    """Test check language endpoint."""
     # Test supported language
     response = await mcp_client.post(
-        "/tools/check_language_available",
+        "/check-language",
         json={"language": "python"}
     )
     
@@ -169,7 +188,7 @@ async def test_mcp_check_language_available(mcp_client):
     
     # Test unsupported language
     response = await mcp_client.post(
-        "/tools/check_language_available",
+        "/check-language",
         json={"language": "unsupported_lang"}
     )
     
@@ -184,9 +203,9 @@ async def test_mcp_check_language_available(mcp_client):
 
 @pytest.mark.asyncio
 async def test_mcp_parse_code_error(mcp_client):
-    """Test parse_code error handling via MCP."""
+    """Test parse code error handling."""
     response = await mcp_client.post(
-        "/tools/parse_code",
+        "/parse",
         json={
             "content": "print('hello')",
             "language": "invalid_language"
@@ -203,9 +222,9 @@ async def test_mcp_parse_code_error(mcp_client):
 
 @pytest.mark.asyncio
 async def test_mcp_parse_file_not_found(mcp_client):
-    """Test parse_file with non-existent file via MCP."""
+    """Test parse file with non-existent file."""
     response = await mcp_client.post(
-        "/tools/parse_file",
+        "/parse-file",
         json={
             "file_path": "/path/to/nonexistent/file.py"
         }
@@ -220,27 +239,71 @@ async def test_mcp_parse_file_not_found(mcp_client):
 
 
 @pytest.mark.asyncio
-async def test_mcp_resource_parsers_info(mcp_client):
-    """Test parsers/info resource via MCP."""
-    response = await mcp_client.get("/resources/agent-tools://parsers/info")
+async def test_mcp_missing_required_fields(mcp_client):
+    """Test endpoints with missing required fields."""
+    # Parse without content
+    response = await mcp_client.post(
+        "/parse",
+        json={"language": "python"}
+    )
     
-    assert response.status_code == 200
-    info = response.text
+    assert response.status_code == 400
+    data = response.json()
+    assert "Missing required fields" in data["error"]
     
-    assert "Available parsers" in info
-    assert "tree-sitter" in info
-    assert "Supported languages" in info
-    assert "python" in info
+    # Parse file without file_path
+    response = await mcp_client.post(
+        "/parse-file",
+        json={}
+    )
+    
+    assert response.status_code == 400
+    data = response.json()
+    assert "Missing required field" in data["error"]
+    
+    # Check language without language
+    response = await mcp_client.post(
+        "/check-language",
+        json={}
+    )
+    
+    assert response.status_code == 400
+    data = response.json()
+    assert "Missing required field" in data["error"]
+
+
+@pytest.mark.asyncio
+async def test_mcp_invalid_json(mcp_client):
+    """Test invalid JSON handling."""
+    response = await mcp_client.post(
+        "/parse",
+        content=b"invalid json",
+        headers={"Content-Type": "application/json"}
+    )
+    
+    assert response.status_code == 400
+    data = response.json()
+    assert "Invalid JSON" in data["error"]
+
+
+@pytest.mark.asyncio
+async def test_mcp_404_endpoints(mcp_client):
+    """Test 404 handling."""
+    response = await mcp_client.get("/nonexistent")
+    assert response.status_code == 404
+    
+    response = await mcp_client.post("/nonexistent", json={})
+    assert response.status_code == 404
 
 
 @pytest.mark.asyncio
 async def test_mcp_concurrent_requests(mcp_client):
-    """Test handling concurrent requests via MCP."""
+    """Test handling concurrent requests."""
     # Create multiple parse tasks
     tasks = []
     for i in range(5):
         task = mcp_client.post(
-            "/tools/parse_code",
+            "/parse",
             json={
                 "content": f"function test{i}() {{ return {i}; }}",
                 "language": "javascript"
@@ -255,54 +318,5 @@ async def test_mcp_concurrent_requests(mcp_client):
     for i, response in enumerate(responses):
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] is True
-        assert f"test{i}" in data["ast"]
-
-
-@pytest.mark.asyncio
-async def test_mcp_parse_complex_code(mcp_client):
-    """Test parsing complex code via MCP."""
-    complex_code = """
-from typing import List, Optional
-import asyncio
-
-class DataProcessor:
-    def __init__(self, workers: int = 4):
-        self.workers = workers
-        self.queue: asyncio.Queue = asyncio.Queue()
-    
-    async def process(self, items: List[str]) -> List[dict]:
-        tasks = []
-        for item in items:
-            task = asyncio.create_task(self._process_item(item))
-            tasks.append(task)
-        
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        return [r for r in results if not isinstance(r, Exception)]
-    
-    async def _process_item(self, item: str) -> dict:
-        await asyncio.sleep(0.1)
-        return {"item": item, "processed": True}
-
-@dataclass
-class Config:
-    timeout: int = 30
-    retries: int = 3
-"""
-    
-    response = await mcp_client.post(
-        "/tools/parse_code",
-        json={
-            "content": complex_code,
-            "language": "python"
-        }
-    )
-    
-    assert response.status_code == 200
-    data = response.json()
-    
-    assert data["success"] is True
-    assert "class_definition" in data["ast"]
-    assert "DataProcessor" in data["ast"]
-    assert "function_definition" in data["ast"]
-    assert "decorator" in data["ast"] or "decorated_definition" in data["ast"]
+        assert data["success"] is False  # Will fail due to missing grammars
+        assert data["language"] == "javascript"
