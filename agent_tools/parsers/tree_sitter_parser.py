@@ -1,267 +1,216 @@
-"""Tree-sitter based code parser with dynamic grammar loading."""
+"""Tree-sitter based code parser implementation."""
 
 import asyncio
-import json
-import os
-import platform
-import shutil
-import subprocess
-import tempfile
+import importlib
+import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
-import httpx
 import tree_sitter
 
-from agent_tools.parsers.base import (
-    BaseParser,
-    GrammarNotFoundError,
-    LanguageNotSupportedError,
-    ParseError,
-    ParseResult,
-)
+from agent_tools.parsers.base import BaseParser, ParseResult
 from agent_tools.parsers.languages import get_language_config, get_supported_languages
-from agent_tools.utils import (
-    detect_language_from_file,
-    get_grammar_cache_dir,
-    hash_content,
-    safe_read_file,
-)
+from agent_tools.utils import safe_read_file, detect_language_from_file
 
 
 class TreeSitterParser(BaseParser):
-    """Tree-sitter based parser with dynamic grammar loading."""
+    """Parser implementation using tree-sitter."""
     
     def __init__(self):
-        self._languages: Dict[str, tree_sitter.Language] = {}
-        self._parsers: Dict[str, tree_sitter.Parser] = {}
-        self._grammar_dir = get_grammar_cache_dir()
-        self._http_client = httpx.AsyncClient(timeout=30.0)
-        
-    async def __aenter__(self):
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self._http_client.aclose()
+        """Initialize the tree-sitter parser."""
+        self.parsers: Dict[str, tree_sitter.Parser] = {}
+        self._language_cache: Dict[str, tree_sitter.Language] = {}
+    
+    def name(self) -> str:
+        """Get parser name."""
+        return "tree-sitter"
+    
+    def supported_languages(self) -> List[str]:
+        """Get list of supported languages."""
+        return get_supported_languages()
+    
+    async def is_language_available(self, language: str) -> bool:
+        """Check if language grammar is available."""
+        try:
+            await self._get_or_install_language(language)
+            return True
+        except Exception:
+            return False
     
     async def parse(self, content: str, language: str) -> ParseResult:
-        """Parse code content and return AST representation."""
+        """Parse source code and return AST."""
         try:
-            # Ensure language is supported
-            if language not in self.supported_languages():
-                raise LanguageNotSupportedError(f"Language '{language}' is not supported")
+            # Get language configuration
+            config = get_language_config(language)
+            if not config:
+                return ParseResult(
+                    language=language,
+                    ast_text="",
+                    metadata={"parser": self.name()},
+                    error=f"Language {language} not supported"
+                )
             
-            # Ensure grammar is available
-            if not await self.is_language_available(language):
-                await self._download_and_build_grammar(language)
+            # Get or install language
+            try:
+                lang = await self._get_or_install_language(language)
+            except Exception as e:
+                return ParseResult(
+                    language=language,
+                    ast_text="",
+                    metadata={"parser": self.name()},
+                    error=str(e)
+                )
             
             # Get or create parser
-            parser = await self._get_parser(language)
+            if language not in self.parsers:
+                parser = tree_sitter.Parser(lang)
+                self.parsers[language] = parser
+            else:
+                parser = self.parsers[language]
             
-            # Parse the content
+            # Parse the code
             tree = parser.parse(bytes(content, "utf8"))
             
-            # Format AST to text
-            ast_text = self._format_tree_sitter_ast(tree.root_node, language, content)
+            # Format AST
+            ast_text = self._format_ast(tree.root_node, content, config)
+            
+            # Count nodes
+            node_count = self._count_nodes(tree.root_node)
             
             return ParseResult(
                 language=language,
                 ast_text=ast_text,
                 metadata={
-                    "parser": "tree-sitter",
-                    "content_hash": hash_content(content),
-                    "node_count": self._count_nodes(tree.root_node),
-                }
+                    "parser": self.name(),
+                    "node_count": node_count,
+                    "tree_sitter_version": str(tree_sitter.LANGUAGE_VERSION)
+                },
+                error=None
             )
             
         except Exception as e:
             return ParseResult(
                 language=language,
                 ast_text="",
-                metadata={"parser": "tree-sitter"},
-                error=str(e)
+                metadata={"parser": self.name()},
+                error=f"Failed to parse: {str(e)}"
             )
     
     async def parse_file(self, file_path: str, language: Optional[str] = None) -> ParseResult:
-        """Parse code from file."""
-        # Auto-detect language if not provided
-        if language is None:
-            language = detect_language_from_file(file_path)
-            if language is None:
-                return ParseResult(
-                    language="unknown",
-                    ast_text="",
-                    metadata={"file_path": file_path},
-                    error=f"Could not detect language for file: {file_path}"
-                )
-        
-        # Read file content
+        """Parse source file and return AST."""
+        # Read file
         try:
             content = safe_read_file(file_path)
         except Exception as e:
             return ParseResult(
-                language=language,
+                language=language or "unknown",
                 ast_text="",
-                metadata={"file_path": file_path},
+                metadata={"parser": self.name()},
                 error=f"Error reading file: {str(e)}"
             )
         
+        # Detect language if not provided
+        if not language:
+            language = detect_language_from_file(file_path)
+            if not language:
+                return ParseResult(
+                    language="unknown",
+                    ast_text="",
+                    metadata={"parser": self.name()},
+                    error="Could not detect language from file extension"
+                )
+        
         # Parse content
-        result = await self.parse(content, language)
-        result.metadata["file_path"] = file_path
-        return result
+        return await self.parse(content, language)
     
-    def supported_languages(self) -> List[str]:
-        """Return list of supported language identifiers."""
-        return get_supported_languages()
-    
-    async def is_language_available(self, language: str) -> bool:
-        """Check if language grammar is available/downloaded."""
-        grammar_path = self._get_grammar_path(language)
-        return grammar_path.exists()
-    
-    def _get_grammar_path(self, language: str) -> Path:
-        """Get path to compiled grammar file."""
-        system = platform.system().lower()
-        arch = platform.machine().lower()
-        return self._grammar_dir / f"{language}_{system}_{arch}.so"
-    
-    async def _get_parser(self, language: str) -> tree_sitter.Parser:
-        """Get or create parser for language."""
-        if language not in self._parsers:
-            # Load language
-            if language not in self._languages:
-                grammar_path = self._get_grammar_path(language)
-                self._languages[language] = tree_sitter.Language(str(grammar_path), language)
-            
-            # Create parser
-            parser = tree_sitter.Parser()
-            parser.set_language(self._languages[language])
-            self._parsers[language] = parser
-            
-        return self._parsers[language]
-    
-    async def _download_and_build_grammar(self, language: str) -> None:
-        """Download and build tree-sitter grammar."""
-        config = get_language_config(language)
-        if not config:
-            raise LanguageNotSupportedError(f"No configuration for language: {language}")
+    async def _get_or_install_language(self, language: str) -> tree_sitter.Language:
+        """Get language object, installing if necessary."""
+        # Check cache first
+        if language in self._language_cache:
+            return self._language_cache[language]
         
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            
-            # Download grammar repository
-            repo_path = temp_path / config.repo_name
-            await self._clone_repository(config.grammar_url, repo_path)
-            
-            # Build grammar
-            grammar_path = self._get_grammar_path(language)
-            await self._build_grammar(language, repo_path, grammar_path)
-    
-    async def _clone_repository(self, repo_url: str, target_path: Path) -> None:
-        """Clone grammar repository."""
-        # Use git to clone (subprocess)
-        proc = await asyncio.create_subprocess_exec(
-            "git", "clone", "--depth", "1", repo_url, str(target_path),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        # Map language names to package names
+        package_map = {
+            "python": "tree-sitter-python",
+            "javascript": "tree-sitter-javascript", 
+            "typescript": "tree-sitter-typescript",
+            "go": "tree-sitter-go",
+            "cpp": "tree-sitter-cpp",
+        }
         
-        if proc.returncode != 0:
-            raise GrammarNotFoundError(
-                f"Failed to clone repository: {stderr.decode()}"
+        package_name = package_map.get(language)
+        if not package_name:
+            raise ValueError(f"No package mapping for language: {language}")
+        
+        # Try to import the language module
+        module_name = package_name.replace("-", "_")
+        
+        try:
+            # Try to import existing module
+            module = importlib.import_module(module_name)
+        except ImportError as e:
+            raise RuntimeError(
+                f"Language package {package_name} not installed. "
+                f"Install it with: uv add {package_name} or uv sync --extra languages"
             )
-    
-    async def _build_grammar(self, language: str, repo_path: Path, output_path: Path) -> None:
-        """Build tree-sitter grammar."""
-        # In newer tree-sitter versions, grammars need to be built differently
-        # For now, we'll skip the actual building and assume pre-built binaries
-        # This is a limitation we need to document
-        import platform
-        import shutil
         
-        # Look for pre-built binary
-        system = platform.system().lower()
-        possible_names = [
-            f"tree-sitter-{language}.so",
-            f"libtree-sitter-{language}.so", 
-            f"tree-sitter-{language}.dylib",
-            f"libtree-sitter-{language}.dylib",
-            f"tree-sitter-{language}.dll"
-        ]
+        # Get the language object
+        # Most tree-sitter language packages expose a language() function that returns a capsule
+        if hasattr(module, 'language'):
+            capsule = module.language()
+            lang = tree_sitter.Language(capsule)
+        elif language == "typescript" and hasattr(module, 'language_typescript'):
+            # TypeScript module has language_typescript and language_tsx
+            capsule = module.language_typescript()
+            lang = tree_sitter.Language(capsule)
+        else:
+            raise RuntimeError(f"Could not find language() function in {module_name}")
         
-        binary_found = False
-        for name in possible_names:
-            binary_path = repo_path / name
-            if binary_path.exists():
-                shutil.copy(binary_path, output_path)
-                binary_found = True
-                break
-                
-        if not binary_found:
-            # Try to build using subprocess
-            try:
-                # This would require tree-sitter CLI to be installed
-                proc = await asyncio.create_subprocess_exec(
-                    "tree-sitter", "build", "--output", str(output_path),
-                    cwd=str(repo_path),
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE
-                )
-                stdout, stderr = await proc.communicate()
-                if proc.returncode != 0:
-                    raise Exception(f"Build failed: {stderr.decode()}")
-            except FileNotFoundError:
-                raise GrammarNotFoundError(
-                    "tree-sitter CLI not found. Please install it to build grammars."
-                )
+        # Cache it
+        self._language_cache[language] = lang
+        return lang
     
-    def _format_tree_sitter_ast(
-        self, node: tree_sitter.Node, language: str, source: str
-    ) -> str:
-        """Format tree-sitter AST node as text."""
-        config = get_language_config(language)
+    
+    def _format_ast(self, node: tree_sitter.Node, source: str, config) -> str:
+        """Format AST node as text."""
         lines = []
-        
-        def should_include_node(node_type: str) -> bool:
-            if config and config.node_types_to_include:
-                return node_type in config.node_types_to_include
-            if config and config.node_types_to_exclude:
-                return node_type not in config.node_types_to_exclude
-            # Default: include all except common noise
-            noise_types = {"comment", "line_comment", "block_comment", ";", ",", "(", ")", "{", "}"}
-            return node_type not in noise_types
-        
-        def format_node(node: tree_sitter.Node, indent: int = 0) -> None:
-            indent_str = "  " * indent
-            
-            # Skip nodes we don't want
-            if not should_include_node(node.type):
-                # Still process children
-                for child in node.children:
-                    format_node(child, indent)
-                return
-            
-            # Format node
-            if node.child_count == 0:
-                # Leaf node - include text
-                text = source[node.start_byte:node.end_byte].strip()
-                if text:
-                    lines.append(f"{indent_str}{node.type}: {repr(text)}")
-                else:
-                    lines.append(f"{indent_str}{node.type}")
-            else:
-                # Non-leaf node
-                lines.append(f"{indent_str}{node.type}")
-                for child in node.children:
-                    format_node(child, indent + 1)
-        
-        format_node(node)
+        self._format_node(node, source, 0, lines, config)
         return "\n".join(lines)
     
+    def _format_node(self, node: tree_sitter.Node, source: str, indent: int, lines: List[str], config) -> None:
+        """Recursively format AST node."""
+        # Format current node
+        indent_str = "  " * indent
+        
+        # Always show the node type
+        if node.child_count == 0:
+            # Leaf node - include text
+            text = source[node.start_byte:node.end_byte]
+            # Escape newlines for display
+            text = text.replace("\n", "\\n")
+            if len(text) > 50:
+                text = text[:47] + "..."
+            lines.append(f"{indent_str}{node.type}: {repr(text)}")
+        else:
+            # Internal node
+            lines.append(f"{indent_str}{node.type}")
+        
+        # Traverse children if not filtered
+        if config.node_types_to_include:
+            # If we have an include list, only show children for included nodes
+            if node.type in config.node_types_to_include:
+                for child in node.children:
+                    self._format_node(child, source, indent + 1, lines, config)
+        elif config.node_types_to_exclude and node.type in config.node_types_to_exclude:
+            # Skip children of excluded nodes
+            return
+        else:
+            # No filtering, show all children
+            for child in node.children:
+                self._format_node(child, source, indent + 1, lines, config)
+    
     def _count_nodes(self, node: tree_sitter.Node) -> int:
-        """Count total nodes in tree."""
+        """Count total nodes in AST."""
         count = 1
         for child in node.children:
             count += self._count_nodes(child)

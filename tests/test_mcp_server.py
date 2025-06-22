@@ -134,10 +134,11 @@ async def test_mcp_parse_code(mcp_client):
     assert response.status_code == 200
     data = response.json()
     
-    assert data["success"] is False  # Will fail due to missing grammars
+    assert data["success"] is True
     assert data["language"] == "python"
-    assert data["ast"] == ""
-    assert "tree-sitter CLI not found" in data["error"] or "Failed to clone repository" in data["error"]
+    assert "module" in data["ast"]
+    assert "function_definition" in data["ast"]
+    assert data["error"] is None
 
 
 @pytest.mark.asyncio
@@ -164,9 +165,11 @@ console.log(result);
     assert response.status_code == 200
     data = response.json()
     
-    assert data["success"] is False  # Will fail due to missing grammars
+    assert data["success"] is True
     assert data["language"] == "javascript"
-    assert "tree-sitter CLI not found" in data["error"] or "Failed to clone repository" in data["error"]
+    assert "program" in data["ast"]
+    assert "function" in data["ast"]
+    assert data["error"] is None
 
 
 @pytest.mark.asyncio
@@ -318,5 +321,5 @@ async def test_mcp_concurrent_requests(mcp_client):
     for i, response in enumerate(responses):
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] is False  # Will fail due to missing grammars
+        assert data["success"] is True
         assert data["language"] == "javascript"

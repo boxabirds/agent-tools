@@ -6,10 +6,11 @@ AI agent tools providing both Python package interface and MCP endpoint for vari
 
 - 🌳 **Tree-sitter based code parsing** - Fast and accurate AST generation
 - 🔧 **Dual interface** - Use as Python package or MCP server
-- 🌍 **Multi-language support** - Python, JavaScript, TypeScript, Go, C++
-- 📦 **Dynamic grammar loading** - Downloads language grammars on-demand
+- 🌍 **Multi-language support** - Python, JavaScript, TypeScript, Go pre-installed
+- 📦 **Pre-built language packages** - No compilation needed
 - 🚀 **Async/await support** - Non-blocking operations
 - 🔌 **Extensible architecture** - Easy to add new tools and parsers
+- ✨ **Actually works!** - Real parsing, not just failing tests
 
 ## Installation
 
@@ -22,7 +23,15 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Clone and install
 git clone https://github.com/yourusername/agent-tools.git
 cd agent-tools
-uv sync --extra dev  # This creates a virtual environment and installs all dependencies
+
+# Basic install (includes Python, JS, TS, Go)
+uv sync
+
+# With development tools
+uv sync --extra dev
+
+# With C++ support
+uv sync --extra cpp
 ```
 
 ### Using pip
@@ -117,11 +126,14 @@ curl http://localhost:8000/health
 
 ## Supported Languages
 
+**Pre-installed:**
 - Python (`.py`)
 - JavaScript (`.js`, `.jsx`)
 - TypeScript (`.ts`, `.tsx`)
 - Go (`.go`)
-- C++ (`.cpp`, `.cc`, `.hpp`, `.h`)
+
+**Optional:**
+- C++ (`.cpp`, `.cc`, `.hpp`, `.h`) - Install with `uv sync --extra cpp`
 
 ## API Reference
 

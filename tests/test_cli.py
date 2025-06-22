@@ -189,12 +189,11 @@ def test_parse_command_file_not_found(runner):
 
 def test_serve_command(runner):
     """Test serve command starts server."""
-    with patch("agent_tools.mcp.server.main") as mock_serve:
+    with patch("agent_tools.mcp.server.run_server") as mock_serve:
         result = runner.invoke(cli, ["serve"])
         
         assert result.exit_code == 0
-        assert "Starting MCP server" in result.output
-        mock_serve.assert_called_once()
+        mock_serve.assert_called_once_with("0.0.0.0", 8000)
 
 
 def test_parse_command_json_with_error(runner):

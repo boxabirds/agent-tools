@@ -267,3 +267,63 @@ FastMCP was overkill for our simple synchronous request/response use case:
 - 12 MCP server integration tests: All passing
 - Tests are straightforward HTTP requests
 - No more timeout issues or protocol complexity
+
+## Session 7: Fixing Tree-sitter Implementation (2025-06-22)
+
+### Problem
+The tree-sitter parser was completely broken:
+- Tests were "passing" by asserting failures
+- No actual parsing was happening
+- Error messages about missing tree-sitter CLI
+
+### Solution Implemented
+1. **Added language packages as optional dependencies**:
+   ```toml
+   [project.optional-dependencies]
+   languages = [
+       "tree-sitter-python>=0.20.0",
+       "tree-sitter-javascript>=0.20.0",
+       "tree-sitter-typescript>=0.20.0",
+       "tree-sitter-go>=0.20.0",
+       "tree-sitter-cpp>=0.20.0",
+   ]
+   ```
+
+2. **Rewrote tree-sitter parser**:
+   - Properly imports language modules
+   - Creates Language objects from PyCapsule
+   - Correct Parser initialization
+   - Better AST formatting
+   - No dynamic installation attempts
+
+3. **Installation**: `uv sync --extra languages`
+
+### Results
+- **Parsing actually works now!**
+- All 5 languages supported
+- Clean AST output
+- Fast and reliable
+
+### Example Output
+```
+$ curl -X POST http://localhost:8000/parse-file \
+    -d '{"file_path": "/tmp/test.py"}'
+
+{
+  "success": true,
+  "language": "python",
+  "ast": "module\n  function_definition\n    def: 'def'\n    identifier: 'hello'\n    parameters\n    :: ':'\n    block",
+  "metadata": {
+    "parser": "tree-sitter",
+    "node_count": 11,
+    "tree_sitter_version": "14"
+  },
+  "error": null
+}
+```
+
+### Key Learnings
+- Tree-sitter language packages expose a `language()` function returning a PyCapsule
+- Must wrap the capsule with `tree_sitter.Language()` constructor
+- Parser is initialized with language: `Parser(lang)` not `Parser().language = lang`
+- Tests should verify functionality, not just consistent failure

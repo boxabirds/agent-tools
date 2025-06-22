@@ -20,10 +20,10 @@ async def test_parse_python_complex(samples_dir):
     file_path = samples_dir / "python_complex.py"
     result = await parse_file(str(file_path))
     
-    # Currently fails due to grammar building issues
-    assert not result.success
+    assert result.success is True
     assert result.language == "python"
-    assert "tree-sitter CLI not found" in result.error or "Failed to clone repository" in result.error
+    assert "class" in result.ast_text
+    assert result.error is None
 
 
 @pytest.mark.asyncio
@@ -32,9 +32,10 @@ async def test_parse_javascript_complex(samples_dir):
     file_path = samples_dir / "javascript_complex.js"
     result = await parse_file(str(file_path))
     
-    assert not result.success
+    assert result.success is True
     assert result.language == "javascript"
-    assert "tree-sitter CLI not found" in result.error or "Failed to clone repository" in result.error
+    assert "function" in result.ast_text or "class" in result.ast_text
+    assert result.error is None
 
 
 @pytest.mark.asyncio
@@ -43,9 +44,10 @@ async def test_parse_typescript_complex(samples_dir):
     file_path = samples_dir / "typescript_complex.ts"
     result = await parse_file(str(file_path))
     
-    assert not result.success
+    assert result.success is True
     assert result.language == "typescript"
-    assert "tree-sitter CLI not found" in result.error or "Failed to clone repository" in result.error
+    assert "class" in result.ast_text or "interface" in result.ast_text
+    assert result.error is None
 
 
 @pytest.mark.asyncio
@@ -54,9 +56,10 @@ async def test_parse_go_complex(samples_dir):
     file_path = samples_dir / "go_complex.go"
     result = await parse_file(str(file_path))
     
-    assert not result.success
+    assert result.success is True
     assert result.language == "go"
-    assert "tree-sitter CLI not found" in result.error or "Failed to clone repository" in result.error
+    assert "func" in result.ast_text or "package" in result.ast_text
+    assert result.error is None
 
 
 @pytest.mark.asyncio
@@ -65,9 +68,10 @@ async def test_parse_cpp_complex(samples_dir):
     file_path = samples_dir / "cpp_complex.cpp"
     result = await parse_file(str(file_path))
     
-    assert not result.success
+    assert result.success is True
     assert result.language == "cpp"
-    assert "tree-sitter CLI not found" in result.error or "Failed to clone repository" in result.error
+    assert "class" in result.ast_text or "function" in result.ast_text
+    assert result.error is None
 
 
 @pytest.mark.asyncio
@@ -85,7 +89,7 @@ async def test_auto_language_detection(samples_dir):
         file_path = samples_dir / filename
         result = await parse_file(str(file_path))  # No language specified
         assert result.language == expected_lang
-        assert not result.success
+        assert result.success is True
 
 
 @pytest.mark.asyncio
@@ -125,6 +129,7 @@ async def test_parse_small_code_snippets():
         from agent_tools import parse_code
         result = await parse_code(code, lang)
         
-        assert not result.success
+        assert result.success is True
         assert result.language == lang
-        assert len(result.error) > 0
+        assert result.error is None
+        assert len(result.ast_text) > 0
